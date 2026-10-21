@@ -1,0 +1,7 @@
+node_modules/
+__pycache__/
+tests/results/
+.cache/
+
+# Temporary preview-service diagnostic with local fixtures
+tests/preview-loader.mjs

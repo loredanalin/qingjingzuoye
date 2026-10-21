@@ -1,0 +1,28 @@
+import assert from 'node:assert/strict';
+import {chromium} from 'playwright';
+const b=await chromium.launch({executablePath:'/usr/bin/chromium',args:['--no-sandbox','--use-angle=swiftshader','--enable-unsafe-swiftshader']});
+try {
+const p=await b.newPage({viewport:{width:1538,height:954}}), errors=[],external=[];
+p.on('pageerror',e=>errors.push(e.message));p.on('console',m=>{if(m.type()==='error')errors.push(m.text())});p.on('request',r=>{if(/^https?:/.test(r.url()))external.push(r.url())});
+await p.goto('http://127.0.0.1:5180/courtyard-restored.html');
+await p.waitForFunction(()=>window.__threeReady,null,{timeout:60000});
+assert.equal(await p.evaluate(()=>window.__threeDebug.fov),26);
+assert.equal(await p.evaluate(()=>window.__threeDebug.fog),null);
+assert.equal(await p.evaluate(()=>window.__threeDebug.layers.length),7);
+assert.equal(await p.evaluate(()=>window.__threeDebug.columnCutout.height),1493);
+await p.screenshot({path:'tests/results/webgl.png'});
+await p.mouse.wheel(0,300);
+await p.waitForFunction(()=>window.__sceneDebug.zoom>1.25);
+await p.evaluate(()=>{for(let i=0;i<8;i++)dispatchEvent(new WheelEvent('wheel',{deltaY:300,cancelable:true}))});
+await p.waitForFunction(()=>window.__sceneDebug.zoom>2.3);
+await p.mouse.move(10,477);await p.waitForFunction(()=>window.__sceneDebug.x>45);
+await p.mouse.move(1528,477);await p.waitForFunction(()=>window.__sceneDebug.x< -45);
+await p.mouse.move(769,477);await p.waitForFunction(()=>Math.abs(window.__sceneDebug.x)<.2&&window.__sceneDebug.walkEnergy<.01);
+await p.screenshot({path:'tests/results/webgl-zoom.png'});
+assert.equal(await p.evaluate(()=>window.__threeDebug.cameraZ<27),true);
+assert.deepEqual(errors,[]);assert.deepEqual(external,['http://127.0.0.1:5180/courtyard-restored.html']);
+await p.evaluate(()=>document.querySelector('#webgl-scene').getContext('webgl2').getExtension('WEBGL_lose_context').loseContext());
+await p.waitForFunction(()=>!document.body.classList.contains('render-3d'));
+assert.equal(await p.locator('#stage').isVisible(),true);
+console.log('PASS: embedded resources load; Three perspective FOV26; seven cutouts; no Fog; forward camera movement; zoomed parallax; zero external requests/errors; context-loss fallback.');
+}finally{await b.close()}

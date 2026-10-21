@@ -1,0 +1,66 @@
+import assert from 'node:assert/strict';
+import { mkdir, readFile } from 'node:fs/promises';
+import { chromium } from 'playwright';
+
+await mkdir('tests/results', { recursive: true });
+const url = process.env.APP_URL || 'http://127.0.0.1:5180/courtyard-restored.html';
+const browser = await chromium.launch({ executablePath: '/usr/bin/chromium', args: ['--no-sandbox', '--disable-webgl'] });
+try {
+  const page = await browser.newPage({ viewport: { width: 1538, height: 954 } });
+  const errors = [], requests = [];
+  page.on('pageerror', e => errors.push(e.message));
+  page.on('request', r => { if (/^https?:/.test(r.url())) requests.push(r.url()); });
+  assert.equal((await page.goto(url)).status(), 200);
+  await page.waitForFunction(() => window.__ready);
+  await page.evaluate(() => Promise.all([...document.images].map(i => i.decode())));
+  assert.equal(await page.locator('body').innerText(), '');
+  assert.equal(await page.locator('#garden .plant').count(), 5);
+  assert.equal(await page.locator('#fence .plant').count(), 1);
+  assert.equal(await page.locator('#column-picture').count(),1);
+  assert(await page.locator('#column').evaluate(e=>+getComputedStyle(e).zIndex>+getComputedStyle(document.getElementById('architecture')).zIndex));
+  assert(await page.locator('#fence').evaluate(e => +getComputedStyle(e).zIndex > +getComputedStyle(document.getElementById('garden')).zIndex));
+  assert(await page.locator('#architecture').evaluate(e => +getComputedStyle(e).zIndex > +getComputedStyle(document.getElementById('fence')).zIndex));
+  await page.screenshot({ path: 'tests/results/rest.png' });
+  await page.mouse.wheel(0, 300);
+  await page.waitForFunction(() => {
+    const s = window.__sceneDebug;
+    return s.zoom > 1.18 && s.walkEnergy > .1 && Math.abs(s.motion.flowers.lean) > .01 && Math.abs(s.motion.gap.lean) > .005;
+  });
+  await page.evaluate(() => { for (let i = 0; i < 8; i++) dispatchEvent(new WheelEvent('wheel', { deltaY: 300, cancelable: true })); });
+  await page.waitForFunction(() => window.__sceneDebug.zoom > 2.3);
+  await page.mouse.move(20, 477);
+  await page.waitForFunction(() => window.__sceneDebug.x > 45);
+  const left = await page.locator('#stage').boundingBox();
+  await page.mouse.move(1518, 477);
+  await page.waitForFunction(() => window.__sceneDebug.x < -45);
+  const right = await page.locator('#stage').boundingBox();
+  assert(left.x - right.x > 85);
+  await page.mouse.move(769, 477);
+  await page.waitForFunction(() => Math.abs(window.__sceneDebug.x) < .1 && window.__sceneDebug.walkEnergy < .01);
+  await page.screenshot({ path: 'tests/results/zoom.png' });
+  const before = (await page.evaluate(() => window.__sceneDebug)).targetZoom;
+  await page.mouse.wheel(0, -300);
+  await page.waitForFunction(v => window.__sceneDebug.targetZoom < v, before);
+  await page.emulateMedia({ reducedMotion: 'reduce' });
+  await page.waitForFunction(() => Object.values(window.__sceneDebug.motion).every(v => v.shift === 0 && v.lean === 0));
+  await page.setViewportSize({ width: 390, height: 844 });
+  assert.equal(await page.evaluate(() => document.documentElement.scrollWidth), 390);
+  await page.screenshot({ path: 'tests/results/mobile.png' });
+  assert.deepEqual(errors, []);
+  assert.deepEqual(requests, [url]);
+  console.log('PASS: initial full view; five independent plants; railing above flowers; wheel back enlarges and forward shrinks; walking motion; bilateral parallax at 2.4x; reduced motion; mobile; no external requests or script errors.');
+
+  const noJS = await browser.newPage({ javaScriptEnabled: false });
+  await noJS.goto(url);
+  assert(await noJS.locator('#room').isVisible());
+  await noJS.screenshot({ path: 'tests/results/no-js.png' });
+  await noJS.close();
+  const sandboxPage = await browser.newPage();
+  const html = await readFile('/workspace/courtyard-restored.html', 'utf8');
+  await sandboxPage.setContent('<iframe sandbox="allow-scripts" style="width:100vw;height:100vh;border:0"></iframe>');
+  await sandboxPage.locator('iframe').evaluate((e, data) => e.srcdoc = data, html);
+  const frame = await (await sandboxPage.locator('iframe').elementHandle()).contentFrame();
+  await frame.waitForFunction(() => window.__ready);
+  assert.equal(await frame.locator('#fence img').evaluate(i => i.complete && i.naturalWidth > 500), true);
+  console.log('PASS: no-JavaScript scene and opaque-origin sandbox/srcdoc preview; no WebGL required.');
+} finally { await browser.close(); }

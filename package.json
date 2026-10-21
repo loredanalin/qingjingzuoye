@@ -1,0 +1,15 @@
+{
+  "name": "courtyard-video-restoration",
+  "private": true,
+  "type": "module",
+  "scripts": {
+    "build": "python scripts/build.py",
+    "test": "node tests/browser.mjs",
+    "test:webgl": "node tests/webgl.mjs"
+  },
+  "devDependencies": {
+    "esbuild": "^0.25.11",
+    "playwright": "1.56.1",
+    "three": "^0.180.0"
+  }
+}
