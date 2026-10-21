@@ -1,0 +1,29 @@
+{
+  "id": "red-column",
+  "width": 267,
+  "height": 1493,
+  "centroidX": 131.8625852970915,
+  "groundY": 1488,
+  "method": "existing-alpha",
+  "registration": {
+    "sourceFrame": [
+      1538,
+      954
+    ],
+    "left": 877,
+    "width": 142,
+    "sourceY": [
+      0,
+      1010,
+      1370,
+      1489
+    ],
+    "sceneY": [
+      0,
+      520,
+      654,
+      700
+    ],
+    "occlusion": "foreground-column-in-front-of-railings-and-vegetation"
+  }
+}
