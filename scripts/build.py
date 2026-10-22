@@ -78,11 +78,11 @@ font-family:"KaiTi","楷体","Kaiti SC","STKaiti","Noto Serif CJK SC","SimSun",s
 #narration-frame{position:absolute;inset:0;width:100%;height:100%;filter:drop-shadow(0 3px 5px #34221130)}
 #narration-speaker{position:absolute;left:0;top:0;width:41.8%;height:25%;display:grid;place-items:center;
 font-size:clamp(20px,2.73cqw,44px);font-weight:400;letter-spacing:.26em;text-indent:.26em;color:#f5e5b2;text-shadow:0 1px 1px #57281750}
-#narration-text{position:absolute;left:6%;right:6%;top:51%;bottom:12%;margin:0;
+#narration-text{position:absolute;left:6%;right:6%;top:30%;bottom:11%;margin:0;display:grid;align-content:center;text-align:center;
 font-size:clamp(16px,2.55cqw,42px);line-height:1.75;letter-spacing:.12em;overflow-wrap:anywhere;pointer-events:auto;user-select:text}
 @media(max-width:700px){#narration{left:50%;width:calc(100vw - 20px);height:280px;aspect-ratio:auto;bottom:max(12px,env(safe-area-inset-bottom))}
-#narration-speaker{font-size:23px;letter-spacing:.18em}#narration-text{left:7%;right:7%;top:34%;bottom:10%;display:grid;align-content:center;font-size:18px;line-height:1.8;letter-spacing:.04em}}
-@media(max-width:700px) and (max-height:500px){#narration{height:auto;aspect-ratio:3.6;bottom:max(.9vh,env(safe-area-inset-bottom))}#narration-speaker{font-size:clamp(17px,2.73cqw,23px)}#narration-text{top:42%;bottom:10%;font-size:clamp(14px,2.55cqw,18px);line-height:1.7}}
+#narration-speaker{font-size:23px;letter-spacing:.18em}#narration-text{left:7%;right:7%;font-size:18px;line-height:1.8;letter-spacing:.04em}}
+@media(max-width:700px) and (max-height:500px){#narration{height:auto;aspect-ratio:3.6;bottom:max(.9vh,env(safe-area-inset-bottom))}#narration-speaker{font-size:clamp(17px,2.73cqw,23px)}#narration-text{font-size:clamp(14px,2.55cqw,18px);line-height:1.7}}
 </style></head><body>
 <div id="stage"><i id="focus" aria-hidden="true"></i>
 <svg id="room" viewBox="0 0 1538 954" preserveAspectRatio="none" aria-hidden="true"><defs>
@@ -115,11 +115,20 @@ font-size:clamp(16px,2.55cqw,42px);line-height:1.75;letter-spacing:.12em;overflo
 </aside>
 <script>
 (function(){'use strict';
-window.addEventListener('click',function(){
+var dialogue=document.getElementById('narration'),step=0;
+function advanceDialogue(){
+if(step===0){
 document.getElementById('narration-speaker').textContent='白居易';
 document.getElementById('narration-text').textContent='今日尚有公务，须早些出门。';
-document.getElementById('narration').setAttribute('data-dialogue','bai-juyi');
-},{once:true});
+dialogue.setAttribute('data-dialogue','bai-juyi');
+}else{
+dialogue.hidden=true;
+dialogue.setAttribute('data-dialogue','finished');
+window.removeEventListener('click',advanceDialogue);
+}
+step++;
+}
+window.addEventListener('click',advanceDialogue);
 })();
 </script>
 <script>__BUNDLE__</script>

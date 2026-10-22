@@ -67,12 +67,21 @@ try {
   assert.equal(await page.locator('#narration-speaker').innerText(),'白居易');
   assert.equal(await page.locator('#narration-text').innerText(),'今日尚有公务，须早些出门。');
   assert.deepEqual(await page.locator('#narration').boundingBox(),dialogueBox);
-  await page.locator('#narration-text').click();
-  assert.equal(await page.locator('#narration-speaker').innerText(),'白居易');
+  const alignment = await page.locator('#narration-text').evaluate(e=>{
+    const range=document.createRange();range.selectNodeContents(e);
+    const text=range.getBoundingClientRect(),box=e.getBoundingClientRect();
+    return Math.abs(text.x+text.width/2-box.x-box.width/2);
+  });
+  assert(alignment<4,'Bai Juyi text is centered inside the light panel');
   await page.screenshot({path:'tests/results/bai-juyi.png'});
+  await page.locator('#narration-text').click();
+  assert.equal(await page.locator('#narration').isVisible(),false);
+  await page.mouse.click(20,100);
+  assert.equal(await page.locator('#narration').isVisible(),false);
+  await page.screenshot({path:'tests/results/scene-only.png'});
   await page.mouse.wheel(0,300);
   await page.waitForFunction(()=>window.__sceneDebug.zoom>1.2);
-  assert.equal(await page.locator('#narration-text').innerText(),'今日尚有公务，须早些出门。');
+  assert.equal(await page.locator('#narration').isVisible(),false);
   assert.deepEqual(errors, []);
   assert.deepEqual(requests, [url]);
   console.log('PASS: exact narration text; screen-fixed dialogue; mobile text fits; five plants; railing above flowers; wheel zoom; walking; bilateral parallax at 2.4x; reduced motion; no external requests/errors.');
@@ -91,6 +100,10 @@ try {
   assert.equal(await touch.locator('#narration-text').innerText(),'今日尚有公务，须早些出门。');
   assert(await touch.locator('#narration-text').evaluate(e=>e.scrollHeight<=e.clientHeight));
   await touch.screenshot({path:'tests/results/bai-juyi-mobile.png'});
+  await touch.locator('#narration-text').tap();
+  assert.equal(await touch.locator('#narration').isVisible(),false);
+  await touch.touchscreen.tap(100,100);
+  assert.equal(await touch.locator('#narration').isVisible(),false);
   await touch.close();
   const sandboxPage = await browser.newPage();
   const html = await readFile('/workspace/courtyard-restored.html', 'utf8');
@@ -101,5 +114,7 @@ try {
   assert.equal(await frame.locator('#fence img').evaluate(i => i.complete && i.naturalWidth > 500), true);
   await frame.locator('body').click({position:{x:20,y:100}});
   assert.equal(await frame.locator('#narration-speaker').innerText(),'白居易');
+  await frame.locator('#narration-text').click();
+  assert.equal(await frame.locator('#narration').isVisible(),false);
   console.log('PASS: no-JavaScript scene and opaque-origin sandbox/srcdoc preview; no WebGL required.');
 } finally { await browser.close(); }
