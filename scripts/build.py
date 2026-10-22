@@ -112,6 +112,12 @@ display:grid;place-items:center;width:42px;height:42px;padding:0;border:1px soli
 .knowledge-open .knowledge-hotspot::before,.knowledge-open .knowledge-hotspot::after{animation-play-state:paused}
 @keyframes knowledge-reveal{from{opacity:0}to{opacity:1}}
 @media(prefers-reduced-motion:reduce){.knowledge-hotspot::before,.knowledge-hotspot::after{animation:none;opacity:.7}.knowledge-hotspot::after{display:none}#knowledge-modal{animation:none}}
+#departure[hidden]{display:none!important}
+#departure{position:fixed;inset:0;z-index:60;display:grid;place-items:center;background:#000;color:#f5ead5;
+font-family:"KaiTi","楷体","Kaiti SC","STKaiti","Noto Serif CJK SC","SimSun",serif;font-size:clamp(36px,5vw,78px);
+letter-spacing:.4em;text-indent:.4em;outline:none;animation:departure-reveal .55s ease-out}
+@keyframes departure-reveal{from{opacity:0}to{opacity:1}}
+@media(prefers-reduced-motion:reduce){#departure{animation:none}}
 </style></head><body>
 <div id="stage"><i id="focus" aria-hidden="true"></i>
 <svg id="room" viewBox="0 0 1538 954" preserveAspectRatio="none" aria-hidden="true"><defs>
@@ -159,6 +165,7 @@ display:grid;place-items:center;width:42px;height:42px;padding:0;border:1px soli
 <button id="knowledge-zoom" type="button" aria-label="放大查看科普图" aria-pressed="false" title="点击放大，再次点击还原">
 <img id="knowledge-image" src="__KNOWLEDGE_POSTER__" alt="梁枋彩画：认识唐代木构装饰。科普图包含木构件、装饰纹样、配色示意及史实边界说明。" draggable="false">
 </button></div></section>
+<section id="departure" role="status" aria-live="polite" tabindex="-1" hidden>出行</section>
 <script>
 (function(){'use strict';
 var dialogue=document.getElementById('narration'),step=0;
@@ -187,10 +194,14 @@ var columnImage=document.getElementById('column-knowledge-content').content.firs
 var railingImage=document.getElementById('railing-knowledge-content').content.firstElementChild;
 var posters={liangfang:{src:image.src,alt:image.alt,label:'梁枋彩画科普'},column:{src:columnImage.getAttribute('src'),alt:columnImage.alt,label:'唐代木构柱科普'},railing:{src:railingImage.getAttribute('src'),alt:railingImage.alt,label:'唐代栏杆科普'}};
 window.__knowledgeOpen=false;
+window.__knowledgeProgress={viewed:[],ready:false,departed:false,threshold:2};
 window.addEventListener('dialogue-finished',function(){hotspots.forEach(function(h){h.hidden=false;});},{once:true});
 function resetZoom(){modal.classList.remove('is-enlarged');zoomButton.setAttribute('aria-pressed','false');zoomButton.setAttribute('aria-label','放大查看科普图');viewport.scrollLeft=viewport.scrollTop=0;}
 function openKnowledge(hotspot){if(hotspot.hidden)return;activeHotspot=hotspot;var topic=hotspot.dataset.topic,poster=posters[topic];
 image.src=poster.src;image.alt=poster.alt;modal.setAttribute('aria-label',poster.label);modal.dataset.topic=topic;
+var progress=window.__knowledgeProgress;if(progress.viewed.indexOf(topic)===-1)progress.viewed.push(topic);
+progress.ready=Object.keys(posters).every(function(key){return progress.viewed.indexOf(key)!==-1;});
+window.dispatchEvent(new Event('knowledge-opened'));
 resetZoom();modal.hidden=false;window.__knowledgeOpen=true;
 scene.inert=true;document.body.classList.add('knowledge-open');closeButton.focus({preventScroll:true});}
 function closeKnowledge(){modal.hidden=true;window.__knowledgeOpen=false;scene.inert=false;document.body.classList.remove('knowledge-open');
@@ -219,19 +230,31 @@ else if(!e.shiftKey&&document.activeElement===last){e.preventDefault();first.foc
 var stage=document.getElementById('stage'),plants=document.querySelectorAll('#garden .plant');
 var reduce=window.matchMedia&&window.matchMedia('(prefers-reduced-motion: reduce)');
 var mx=0,my=0,x=0,y=0,zoom=1,target=1,last=0,phase=0,energy=0,pitch=0;
-var focus={x:.76,y:.45},minZoom=1,maxZoom=2.4;
-window.addEventListener('pointermove',function(e){if(window.__knowledgeOpen)return;mx=Math.max(-1,Math.min(1,e.clientX/innerWidth*2-1));my=Math.max(-1,Math.min(1,e.clientY/innerHeight*2-1));},{passive:true});
+var focus={x:.76,y:.45},minZoom=1,maxZoom=2.4,departureArmed=false;
+window.__departed=false;
+window.addEventListener('knowledge-opened',function(){departureArmed=false;});
+function depart(){window.__departed=true;window.__knowledgeProgress.departed=true;
+var departure=document.getElementById('departure');departure.hidden=false;stage.inert=true;
+document.body.classList.add('departed');departure.focus({preventScroll:true});}
+window.addEventListener('pointermove',function(e){if(window.__knowledgeOpen||window.__departed)return;mx=Math.max(-1,Math.min(1,e.clientX/innerWidth*2-1));my=Math.max(-1,Math.min(1,e.clientY/innerHeight*2-1));},{passive:true});
 document.documentElement.addEventListener('pointerleave',function(){mx=my=0;});
 window.addEventListener('blur',function(){mx=my=0;});
-window.addEventListener('wheel',function(e){if(window.__knowledgeOpen)return;e.preventDefault();var unit=e.deltaMode===1?16:e.deltaMode===2?innerHeight:1;
-var delta=Math.max(-300,Math.min(300,e.deltaY*unit));target=Math.max(minZoom,Math.min(maxZoom,target*Math.exp(delta*.001)));},{passive:false});
-window.addEventListener('keydown',function(e){if(window.__knowledgeOpen)return;if(e.key==='0'||e.key==='Home'){target=1;mx=my=0;}
+window.addEventListener('wheel',function(e){if(window.__knowledgeOpen||window.__departed)return;e.preventDefault();var unit=e.deltaMode===1?16:e.deltaMode===2?innerHeight:1;
+var delta=Math.max(-300,Math.min(300,e.deltaY*unit));
+if(delta!==0)departureArmed=delta>0&&window.__knowledgeProgress.ready;
+target=Math.max(minZoom,Math.min(maxZoom,target*Math.exp(delta*.001)));},{passive:false});
+window.addEventListener('keydown',function(e){if(window.__knowledgeOpen||window.__departed)return;
+if(['0','Home','+','=','-'].indexOf(e.key)!==-1)departureArmed=false;
+if(e.key==='0'||e.key==='Home'){target=1;mx=my=0;}
 else if(e.key==='+'||e.key==='=')target=Math.min(maxZoom,target*1.12);else if(e.key==='-')target=Math.max(minZoom,target/1.12);});
 function tick(time){
+if(window.__departed)return;
 var dt=last?Math.min((time-last)/1000,.1):.016;last=time;
 if(window.__knowledgeOpen){if(window.__renderThree&&window.__sceneDebug)window.__renderThree(window.__sceneDebug);requestAnimationFrame(tick);return;}
 var quiet=reduce&&reduce.matches,damp=1-Math.exp(-4.2*dt),before=zoom;
-zoom+=(target-zoom)*(quiet?1:damp);var delta=zoom-before,walk=Math.max(0,Math.min(1,(zoom-1)/1.4));
+zoom+=(target-zoom)*(quiet?1:damp);
+if(departureArmed&&window.__knowledgeProgress.ready&&zoom>=window.__knowledgeProgress.threshold){depart();return;}
+var delta=zoom-before,walk=Math.max(0,Math.min(1,(zoom-1)/1.4));
 phase+=Math.abs(delta)*23;var activity=quiet?0:Math.min(1,Math.abs(delta)/Math.max(.001,dt)*1.4);
 energy+=(activity-energy)*(1-Math.exp(-7*dt));
 var bob=quiet?0:Math.sin(phase*2)*1.6*energy,drift=quiet?0:Math.sin(phase)*.5*energy;

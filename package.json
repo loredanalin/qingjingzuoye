@@ -6,7 +6,8 @@
     "build": "python scripts/build.py",
     "test": "node tests/browser.mjs",
     "test:webgl": "node tests/webgl.mjs",
-    "test:knowledge": "node tests/knowledge-modal.mjs"
+    "test:knowledge": "node tests/knowledge-modal.mjs",
+    "test:departure": "node tests/departure.mjs"
   },
   "devDependencies": {
     "esbuild": "^0.25.11",
