@@ -8,6 +8,7 @@ for(const webgl of [false,true]){
     const page=await browser.newPage({viewport:{width:1538,height:954},reducedMotion:'reduce'}),errors=[];
     page.on('pageerror',e=>errors.push(e.message));
     await page.goto(url);await page.waitForFunction(w=>w?window.__threeReady:window.__ready,webgl);
+    await page.locator('#start-game').click();
     const progress=()=>page.evaluate(()=>window.__knowledgeProgress);
     const reset=async()=>{await page.keyboard.press('Home');await page.waitForFunction(()=>window.__sceneDebug.zoom===1);};
     const wheel=async(delta)=>{await page.mouse.wheel(0,delta);await page.waitForTimeout(150);};

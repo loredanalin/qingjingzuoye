@@ -52,6 +52,7 @@ railing = node('railing', .861, .748, .440, 0, 'railing')
 reference = inline('reference', (1538, 954), 86)
 clean = inline('clean', (1538, 954), 84)
 column = 'data:image/png;base64,' + base64.b64encode((ASSETS / 'red-column.png').read_bytes()).decode()
+opening_picture = 'data:image/png;base64,' + base64.b64encode((ROOT / 'deliverables/opening/opening-restored.png').read_bytes()).decode()
 dialogue_frame = 'data:image/svg+xml;base64,' + base64.b64encode((ASSETS / 'dialogue-frame.svg').read_bytes()).decode()
 railing_poster = 'data:image/png;base64,' + base64.b64encode((ASSETS / 'railing-knowledge.png').read_bytes()).decode()
 column_poster = 'data:image/png;base64,' + base64.b64encode((ASSETS / 'column-knowledge.png').read_bytes()).decode()
@@ -118,8 +119,21 @@ font-family:"KaiTi","楷体","Kaiti SC","STKaiti","Noto Serif CJK SC","SimSun",s
 letter-spacing:.4em;text-indent:.4em;outline:none;animation:departure-reveal .55s ease-out}
 @keyframes departure-reveal{from{opacity:0}to{opacity:1}}
 @media(prefers-reduced-motion:reduce){#departure{animation:none}}
+#opening[hidden]{display:none!important}
+#opening{position:fixed;inset:0;z-index:50;display:grid;place-items:center;background:#170f0a}
+#opening-art{position:relative;width:min(100vw,177.6833vh);aspect-ratio:1672/941}
+#opening-image{display:block;width:100%;height:100%;object-fit:contain;user-select:none}
+#start-game{position:absolute;left:37.4%;top:72.7%;transform:translateY(-50%);width:26.8%;height:10.8%;min-height:44px;
+border:0;border-radius:18%;padding:0;background:transparent;cursor:pointer;touch-action:manipulation}
+#start-game:hover{box-shadow:0 0 22px #f4d58a66,inset 0 0 16px #f4d58a22}
+#start-game:focus-visible{outline:2px solid #fff1bc;outline-offset:4px}
+body:not(.game-started) #narration{visibility:hidden}
 </style></head><body>
-<div id="stage"><i id="focus" aria-hidden="true"></i>
+<section id="opening" aria-label="游戏开屏">
+<div id="opening-art"><img id="opening-image" src="__OPENING__" alt="唐风街市游戏开屏" draggable="false">
+<button id="start-game" type="button" aria-label="开始游戏" title="开始游戏"></button></div>
+</section>
+<div id="stage" inert><i id="focus" aria-hidden="true"></i>
 <svg id="room" viewBox="0 0 1538 954" preserveAspectRatio="none" aria-hidden="true"><defs>
 <image id="reference-picture" width="1538" height="954" href="__REFERENCE__"/>
 <image id="clean-picture" width="1538" height="954" href="__CLEAN__"/>
@@ -154,7 +168,7 @@ letter-spacing:.4em;text-indent:.4em;outline:none;animation:departure-reveal .55
 </button></div><div id="paper"></div>
 <template id="railing-knowledge-content"><img src="__RAILING_POSTER__" alt="认识唐代建筑中的栏杆。介绍整体构造、通用构件称谓、材料与形式、纹样、空间功能及观察方法，注明艺术示意与史实边界。"></template>
 <template id="column-knowledge-content"><img src="__COLUMN_POSTER__" alt="唐代木构建筑的柱：承重与装饰。介绍柱身、柱头与斗栱、柱础、彩饰与纹样，区分收分、卷杀与侧脚，并注明艺术示意与史实边界。"></template>
-<aside id="narration" data-dialogue="narration" aria-labelledby="narration-speaker" aria-live="polite" aria-atomic="true">
+<aside id="narration" inert tabindex="-1" data-dialogue="narration" aria-labelledby="narration-speaker" aria-live="polite" aria-atomic="true">
 <img id="narration-frame" src="__DIALOGUE_FRAME__" alt="" draggable="false" aria-hidden="true">
 <span id="narration-speaker">旁白</span>
 <p id="narration-text">晨光初透，长安渐醒。元和三年，白居易居于长安。新的一日，从庭院中的第一缕阳光开始。</p>
@@ -168,8 +182,15 @@ letter-spacing:.4em;text-indent:.4em;outline:none;animation:departure-reveal .55
 <section id="departure" role="status" aria-live="polite" tabindex="-1" hidden>出行</section>
 <script>
 (function(){'use strict';
+window.__gameStarted=false;
+var opening=document.getElementById('opening'),start=document.getElementById('start-game');
+start.addEventListener('click',function(e){e.stopPropagation();if(window.__gameStarted)return;
+window.__gameStarted=true;opening.hidden=true;document.body.classList.add('game-started');
+document.getElementById('stage').inert=false;var narration=document.getElementById('narration');narration.inert=false;
+narration.focus({preventScroll:true});window.dispatchEvent(new Event('game-started'));});
 var dialogue=document.getElementById('narration'),step=0;
 function advanceDialogue(){
+if(!window.__gameStarted)return;
 if(step===0){
 document.getElementById('narration-speaker').textContent='白居易';
 document.getElementById('narration-text').textContent='今日尚有公务，须早些出门。';
@@ -236,14 +257,14 @@ window.addEventListener('knowledge-opened',function(){departureArmed=false;});
 function depart(){window.__departed=true;window.__knowledgeProgress.departed=true;
 var departure=document.getElementById('departure');departure.hidden=false;stage.inert=true;
 document.body.classList.add('departed');departure.focus({preventScroll:true});}
-window.addEventListener('pointermove',function(e){if(window.__knowledgeOpen||window.__departed)return;mx=Math.max(-1,Math.min(1,e.clientX/innerWidth*2-1));my=Math.max(-1,Math.min(1,e.clientY/innerHeight*2-1));},{passive:true});
+window.addEventListener('pointermove',function(e){if(!window.__gameStarted||window.__knowledgeOpen||window.__departed)return;mx=Math.max(-1,Math.min(1,e.clientX/innerWidth*2-1));my=Math.max(-1,Math.min(1,e.clientY/innerHeight*2-1));},{passive:true});
 document.documentElement.addEventListener('pointerleave',function(){mx=my=0;});
 window.addEventListener('blur',function(){mx=my=0;});
-window.addEventListener('wheel',function(e){if(window.__knowledgeOpen||window.__departed)return;e.preventDefault();var unit=e.deltaMode===1?16:e.deltaMode===2?innerHeight:1;
+window.addEventListener('wheel',function(e){if(!window.__gameStarted||window.__knowledgeOpen||window.__departed)return;e.preventDefault();var unit=e.deltaMode===1?16:e.deltaMode===2?innerHeight:1;
 var delta=Math.max(-300,Math.min(300,e.deltaY*unit));
 if(delta!==0)departureArmed=delta>0&&window.__knowledgeProgress.ready;
 target=Math.max(minZoom,Math.min(maxZoom,target*Math.exp(delta*.001)));},{passive:false});
-window.addEventListener('keydown',function(e){if(window.__knowledgeOpen||window.__departed)return;
+window.addEventListener('keydown',function(e){if(!window.__gameStarted||window.__knowledgeOpen||window.__departed)return;
 if(['0','Home','+','=','-'].indexOf(e.key)!==-1)departureArmed=false;
 if(e.key==='0'||e.key==='Home'){target=1;mx=my=0;}
 else if(e.key==='+'||e.key==='=')target=Math.min(maxZoom,target*1.12);else if(e.key==='-')target=Math.max(minZoom,target/1.12);});
@@ -288,7 +309,7 @@ if(window.__renderThree)window.__renderThree(window.__sceneDebug);
 requestAnimationFrame(tick);
 })();
 </script></body></html>'''
-for token, value in [('__REFERENCE__', reference), ('__CLEAN__', clean), ('__COLUMN__', column), ('__DIALOGUE_FRAME__', dialogue_frame), ('__KNOWLEDGE_POSTER__', knowledge_poster), ('__COLUMN_POSTER__', column_poster), ('__RAILING_POSTER__', railing_poster), ('__PLANTS__', plants), ('__RAILING__', railing), ('__DISTANT__', distant), ('__BUNDLE__', bundle)]:
+for token, value in [('__OPENING__', opening_picture), ('__REFERENCE__', reference), ('__CLEAN__', clean), ('__COLUMN__', column), ('__DIALOGUE_FRAME__', dialogue_frame), ('__KNOWLEDGE_POSTER__', knowledge_poster), ('__COLUMN_POSTER__', column_poster), ('__RAILING_POSTER__', railing_poster), ('__PLANTS__', plants), ('__RAILING__', railing), ('__DISTANT__', distant), ('__BUNDLE__', bundle)]:
     html = html.replace(token, value)
 if remainders := [t for t in __import__('re').findall(r'__[A-Z_]+__', html) if t not in ('__THREE__', '__THREE_DEVTOOLS__')]:
     raise ValueError(remainders)

@@ -10,6 +10,7 @@ for(const webgl of [false,true]){
     page.on('request',r=>{if(/^https?:/.test(r.url()))requests.push(r.url())});
     await page.goto(url);
     await page.waitForFunction(w=>w?window.__threeReady:window.__ready,webgl);
+    await page.locator('#start-game').click();
     assert.equal(await page.locator('#knowledge-hotspot').isVisible(),false);
     assert.equal(await page.locator('#column-knowledge-hotspot').isVisible(),false);
     assert.equal(await page.locator('#railing-knowledge-hotspot').isVisible(),false);
@@ -101,7 +102,7 @@ for(const webgl of [false,true]){
     console.log(`PASS ${webgl?'WebGL':'CSS'}: three hotspots after two dialogues; correct transparent posters; switch topics; dark modal; reading zoom; frozen scene; focus; Escape/backdrop/button close; scene resumes; offline.`);
     if(!webgl){
       const mobile=await browser.newPage({viewport:{width:390,height:844},isMobile:true,hasTouch:true});
-      await mobile.goto(url);await mobile.waitForFunction(()=>window.__ready);
+      await mobile.goto(url);await mobile.waitForFunction(()=>window.__ready);await mobile.locator('#start-game').tap();
       await mobile.touchscreen.tap(100,50);await mobile.touchscreen.tap(100,50);
       await mobile.locator('#knowledge-hotspot').tap();
       assert.equal(await mobile.locator('#knowledge-modal').isVisible(),true);

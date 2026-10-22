@@ -7,7 +7,8 @@
     "test": "node tests/browser.mjs",
     "test:webgl": "node tests/webgl.mjs",
     "test:knowledge": "node tests/knowledge-modal.mjs",
-    "test:departure": "node tests/departure.mjs"
+    "test:departure": "node tests/departure.mjs",
+    "test:opening": "node tests/opening.mjs"
   },
   "devDependencies": {
     "esbuild": "^0.25.11",

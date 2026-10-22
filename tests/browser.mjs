@@ -12,6 +12,7 @@ try {
   page.on('request', r => { if (/^https?:/.test(r.url())) requests.push(r.url()); });
   assert.equal((await page.goto(url)).status(), 200);
   await page.waitForFunction(() => window.__ready);
+  await page.locator('#start-game').click();
   await page.evaluate(() => Promise.all([...document.images].map(i => i.decode())));
   assert.equal(await page.locator('#narration-speaker').innerText(), '旁白');
   assert.equal(await page.locator('#narration-text').innerText(), '晨光初透，长安渐醒。元和三年，白居易居于长安。新的一日，从庭院中的第一缕阳光开始。');
@@ -94,6 +95,7 @@ try {
   const touch = await browser.newPage({viewport:{width:390,height:844},isMobile:true,hasTouch:true});
   await touch.goto(url);
   await touch.waitForFunction(()=>window.__ready);
+  await touch.locator('#start-game').click();
   assert.equal(await touch.locator('#narration-speaker').innerText(),'旁白');
   await touch.locator('#narration-text').tap();
   assert.equal(await touch.locator('#narration-speaker').innerText(),'白居易');
@@ -111,6 +113,7 @@ try {
   await sandboxPage.locator('iframe').evaluate((e, data) => e.srcdoc = data, html);
   const frame = await (await sandboxPage.locator('iframe').elementHandle()).contentFrame();
   await frame.waitForFunction(() => window.__ready);
+  await frame.locator('#start-game').click();
   assert.equal(await frame.locator('#fence img').evaluate(i => i.complete && i.naturalWidth > 500), true);
   await frame.locator('body').click({position:{x:20,y:100}});
   assert.equal(await frame.locator('#narration-speaker').innerText(),'白居易');

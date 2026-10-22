@@ -19,6 +19,7 @@ for(const webgl of [false,true]){
   await page.route('**/courtyard-restored.html',route=>route.fulfill({body:html,contentType:'text/html'}));
   await page.goto('http://127.0.0.1:5180/courtyard-restored.html');
   await page.waitForFunction(w=>w?window.__threeReady:window.__ready,webgl);
+    await page.locator('#start-game').click();
   await page.locator('#narration').evaluate(e=>e.style.visibility='hidden'); // Inspect scene pixels underneath the screen-space dialogue.
   async function check(label){
    const points=await page.evaluate(()=>[[884,400],[916,300],[916,500],[897,400]].map(([x,y])=>{

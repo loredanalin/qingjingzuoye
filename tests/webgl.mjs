@@ -6,6 +6,7 @@ const p=await b.newPage({viewport:{width:1538,height:954}}), errors=[],external=
 p.on('pageerror',e=>errors.push(e.message));p.on('console',m=>{if(m.type()==='error')errors.push(m.text())});p.on('request',r=>{if(/^https?:/.test(r.url()))external.push(r.url())});
 await p.goto('http://127.0.0.1:5180/courtyard-restored.html');
 await p.waitForFunction(()=>window.__threeReady,null,{timeout:60000});
+await p.locator('#start-game').click();
 assert.equal(await p.evaluate(()=>window.__threeDebug.fov),26);
 assert.equal(await p.evaluate(()=>window.__threeDebug.fog),null);
 assert.equal(await p.evaluate(()=>window.__threeDebug.layers.length),7);
