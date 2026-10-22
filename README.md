@@ -8,12 +8,12 @@
 
 下载 `deliverables/courtyard-offline.zip`，解压后用 Chrome、Edge 或 Firefox 打开 `courtyard-offline.html`。所有图片和脚本已内嵌，无需网络、服务器或安装依赖。
 
-ZIP 还包含独立柱子透明 PNG、定位 JSON、中文使用说明和 SHA-256 校验清单。按 `0` 或 Home 复位，`+` / `-` 缩放。画面不显示文字或控制按钮。
+ZIP 还包含独立柱子透明 PNG、定位 JSON、中文使用说明和 SHA-256 校验清单。按 `0` 或 Home 复位，`+` / `-` 缩放。画面底部显示固定的旁白对话框，朱红描金名牌上写“旁白”，浅色纸底展示指定正文；不添加控制按钮。
 
 ## 备份内容
 
 - `index.html`：当前完整自包含 HTML，与交付的 HTML 一致。
-- `deliverables/`：离线 HTML、运行 ZIP、独立红柱 PNG 和注册数据。
+- `deliverables/`：离线 HTML、运行 ZIP、独立红柱 PNG、注册数据和旁白框 SVG。
 - `assets/`：背景、原录屏参考画面、透明图层及重心和接地线元数据。
 - `scripts/build.py`：将全部图片和 Three.js 打包进单个 HTML。
 - `scripts/prepare.py`：透明素材清理和自适应纸底抠图，记录尺寸、水平重心与接地线。

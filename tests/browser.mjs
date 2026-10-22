@@ -13,7 +13,9 @@ try {
   assert.equal((await page.goto(url)).status(), 200);
   await page.waitForFunction(() => window.__ready);
   await page.evaluate(() => Promise.all([...document.images].map(i => i.decode())));
-  assert.equal(await page.locator('body').innerText(), '');
+  assert.equal(await page.locator('#narration-speaker').innerText(), '旁白');
+  assert.equal(await page.locator('#narration-text').innerText(), '晨光初透，长安渐醒。元和三年，白居易居于长安。新的一日，从庭院中的第一缕阳光开始。');
+  const narrationStart = await page.locator('#narration').boundingBox();
   assert.equal(await page.locator('#garden .plant').count(), 5);
   assert.equal(await page.locator('#fence .plant').count(), 1);
   assert.equal(await page.locator('#column-picture').count(),1);
@@ -38,6 +40,7 @@ try {
   await page.mouse.move(769, 477);
   await page.waitForFunction(() => Math.abs(window.__sceneDebug.x) < .1 && window.__sceneDebug.walkEnergy < .01);
   await page.screenshot({ path: 'tests/results/zoom.png' });
+  assert.deepEqual(await page.locator('#narration').boundingBox(), narrationStart);
   const before = (await page.evaluate(() => window.__sceneDebug)).targetZoom;
   await page.mouse.wheel(0, -300);
   await page.waitForFunction(v => window.__sceneDebug.targetZoom < v, before);
@@ -45,10 +48,13 @@ try {
   await page.waitForFunction(() => Object.values(window.__sceneDebug.motion).every(v => v.shift === 0 && v.lean === 0));
   await page.setViewportSize({ width: 390, height: 844 });
   assert.equal(await page.evaluate(() => document.documentElement.scrollWidth), 390);
+  assert(await page.locator('#narration-text').evaluate(e => e.scrollHeight <= e.clientHeight));
+  const narrationMobile = await page.locator('#narration').boundingBox();
+  assert(narrationMobile.x >= 0 && narrationMobile.x + narrationMobile.width <= 390);
   await page.screenshot({ path: 'tests/results/mobile.png' });
   assert.deepEqual(errors, []);
   assert.deepEqual(requests, [url]);
-  console.log('PASS: initial full view; five independent plants; railing above flowers; wheel back enlarges and forward shrinks; walking motion; bilateral parallax at 2.4x; reduced motion; mobile; no external requests or script errors.');
+  console.log('PASS: exact narration text; screen-fixed dialogue; mobile text fits; five plants; railing above flowers; wheel zoom; walking; bilateral parallax at 2.4x; reduced motion; no external requests/errors.');
 
   const noJS = await browser.newPage({ javaScriptEnabled: false });
   await noJS.goto(url);

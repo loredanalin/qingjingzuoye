@@ -52,6 +52,7 @@ railing = node('railing', .861, .748, .440, 0, 'railing')
 reference = inline('reference', (1538, 954), 86)
 clean = inline('clean', (1538, 954), 84)
 column = 'data:image/png;base64,' + base64.b64encode((ASSETS / 'red-column.png').read_bytes()).decode()
+dialogue_frame = 'data:image/svg+xml;base64,' + base64.b64encode((ASSETS / 'dialogue-frame.svg').read_bytes()).decode()
 bundle = subprocess.check_output(['node', '--input-type=module', '-e',
     "import {buildSync} from 'esbuild'; const r=buildSync({entryPoints:['scripts/webgl.js'],bundle:true,format:'iife',write:false,minify:true,target:'es2019'});process.stdout.write(r.outputFiles[0].text)"], cwd=ROOT).decode()
 html = '''<!doctype html>
@@ -71,6 +72,17 @@ transform-origin:76% 45%;will-change:transform}
 #paper{z-index:10;position:fixed;inset:0;pointer-events:none;opacity:.035;mix-blend-mode:multiply;
 background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='128' height='128'%3E%3Cfilter id='p'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='.8' numOctaves='3' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='128' height='128' filter='url(%23p)' opacity='.6'/%3E%3C/svg%3E");background-size:128px 128px}
 @media(prefers-reduced-motion:reduce){#stage{will-change:auto}}
+#narration{position:fixed;z-index:20;left:50%;bottom:max(22px,env(safe-area-inset-bottom));transform:translateX(-50%);
+width:min(92vw,1480px);height:clamp(210px,29vh,320px);color:#493a2b;
+font-family:"Songti SC","Noto Serif CJK SC","Source Han Serif SC","SimSun",serif;pointer-events:none}
+#narration-frame{position:absolute;inset:0;width:100%;height:100%;filter:drop-shadow(0 3px 5px #34221130)}
+#narration-speaker{position:absolute;left:0;top:0;width:40.5%;height:27%;display:grid;place-items:center;
+font-size:clamp(23px,1.8vw,29px);font-weight:600;letter-spacing:.28em;text-indent:.28em;color:#f3dfaf;text-shadow:0 1px 2px #35170f}
+#narration-text{position:absolute;left:6%;right:6%;top:34%;bottom:10%;margin:0;display:grid;align-content:center;
+font-size:clamp(18px,1.55vw,24px);line-height:1.95;letter-spacing:.07em;overflow-wrap:anywhere;pointer-events:auto;user-select:text}
+@media(max-width:600px){#narration{width:calc(100vw - 20px);height:280px;bottom:max(12px,env(safe-area-inset-bottom))}
+#narration-speaker{font-size:23px;letter-spacing:.18em}#narration-text{left:7%;right:7%;font-size:18px;line-height:1.8;letter-spacing:.04em}}
+@media(max-height:600px) and (min-width:601px){#narration{height:180px;bottom:12px}#narration-text{font-size:18px;line-height:1.7}#narration-speaker{font-size:22px}}
 </style></head><body>
 <div id="stage"><i id="focus" aria-hidden="true"></i>
 <svg id="room" viewBox="0 0 1538 954" preserveAspectRatio="none" aria-hidden="true"><defs>
@@ -96,6 +108,11 @@ background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/sv
 <g clip-path="url(#column-gold)"><use href="#column-picture" transform="translate(877 144.055556) scale(0.531835206 0.372222222)"/></g>
 <g clip-path="url(#column-stone)"><use href="#column-picture" transform="translate(877 124.420168) scale(0.531835206 0.386554622)"/></g>
 </g></svg></div><div id="paper"></div>
+<aside id="narration" aria-labelledby="narration-speaker">
+<img id="narration-frame" src="__DIALOGUE_FRAME__" alt="" draggable="false" aria-hidden="true">
+<span id="narration-speaker">旁白</span>
+<p id="narration-text">晨光初透，长安渐醒。元和三年，白居易居于长安。新的一日，从庭院中的第一缕阳光开始。</p>
+</aside>
 <script>__BUNDLE__</script>
 <script>
 (function(){'use strict';
@@ -147,7 +164,7 @@ if(window.__renderThree)window.__renderThree(window.__sceneDebug);
 requestAnimationFrame(tick);
 })();
 </script></body></html>'''
-for token, value in [('__REFERENCE__', reference), ('__CLEAN__', clean), ('__COLUMN__', column), ('__PLANTS__', plants), ('__RAILING__', railing), ('__DISTANT__', distant), ('__BUNDLE__', bundle)]:
+for token, value in [('__REFERENCE__', reference), ('__CLEAN__', clean), ('__COLUMN__', column), ('__DIALOGUE_FRAME__', dialogue_frame), ('__PLANTS__', plants), ('__RAILING__', railing), ('__DISTANT__', distant), ('__BUNDLE__', bundle)]:
     html = html.replace(token, value)
 if remainders := [t for t in __import__('re').findall(r'__[A-Z_]+__', html) if t not in ('__THREE__', '__THREE_DEVTOOLS__')]:
     raise ValueError(remainders)
