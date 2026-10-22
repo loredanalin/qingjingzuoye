@@ -12,9 +12,11 @@ for(const webgl of [false,true]){
     await page.waitForFunction(w=>w?window.__threeReady:window.__ready,webgl);
     assert.equal(await page.locator('#knowledge-hotspot').isVisible(),false);
     assert.equal(await page.locator('#column-knowledge-hotspot').isVisible(),false);
+    assert.equal(await page.locator('#railing-knowledge-hotspot').isVisible(),false);
     await page.mouse.click(20,100);
     assert.equal(await page.locator('#knowledge-hotspot').isVisible(),false);
     assert.equal(await page.locator('#column-knowledge-hotspot').isVisible(),false);
+    assert.equal(await page.locator('#railing-knowledge-hotspot').isVisible(),false);
     await page.mouse.click(20,100);
     assert.equal(await page.locator('#narration').isVisible(),false);
     assert.equal(await page.locator('#knowledge-hotspot').isVisible(),true);
@@ -73,6 +75,22 @@ for(const webgl of [false,true]){
     assert.equal(await page.locator('#knowledge-zoom').getAttribute('aria-pressed'),'true');
     await page.keyboard.press('Escape');
     assert.equal(await page.evaluate(()=>document.activeElement.id),'column-knowledge-hotspot');
+    await page.locator('#railing-knowledge-hotspot').click();
+    await page.locator('#knowledge-image').evaluate(i=>i.decode());
+    assert.equal(await page.locator('#knowledge-modal').getAttribute('data-topic'),'railing');
+    assert.equal(await page.locator('#knowledge-modal').getAttribute('aria-label'),'唐代栏杆科普');
+    assert.equal(await page.locator('#knowledge-image').evaluate(i=>{
+      const c=document.createElement('canvas');c.width=c.height=1;
+      const g=c.getContext('2d');g.drawImage(i,0,0);return g.getImageData(0,0,1,1).data[3];
+    }),0,'railing poster has a transparent outer background');
+    await page.screenshot({path:`tests/results/railing-knowledge-modal-${webgl?'webgl':'css'}.png`});
+    const railingFrozen=await state();
+    await page.mouse.wheel(0,300);await page.waitForTimeout(120);
+    assert.deepEqual(await state(),railingFrozen);
+    await page.locator('#knowledge-zoom').click();
+    assert.equal(await page.locator('#knowledge-zoom').getAttribute('aria-pressed'),'true');
+    await page.keyboard.press('Escape');
+    assert.equal(await page.evaluate(()=>document.activeElement.id),'railing-knowledge-hotspot');
     await page.locator('#knowledge-hotspot').click();
     await page.locator('#knowledge-image').evaluate(i=>i.decode());
     assert.equal(await page.locator('#knowledge-modal').getAttribute('data-topic'),'liangfang');
@@ -80,7 +98,7 @@ for(const webgl of [false,true]){
     assert.equal(await page.locator('#knowledge-zoom').getAttribute('aria-pressed'),'false');
     await page.locator('#knowledge-close').click();
     assert.deepEqual(errors,[]);assert.deepEqual(requests,[url]);
-    console.log(`PASS ${webgl?'WebGL':'CSS'}: both hotspots after two dialogues; correct transparent posters; switch topics; dark modal; reading zoom; frozen scene; focus; Escape/backdrop/button close; scene resumes; offline.`);
+    console.log(`PASS ${webgl?'WebGL':'CSS'}: three hotspots after two dialogues; correct transparent posters; switch topics; dark modal; reading zoom; frozen scene; focus; Escape/backdrop/button close; scene resumes; offline.`);
     if(!webgl){
       const mobile=await browser.newPage({viewport:{width:390,height:844},isMobile:true,hasTouch:true});
       await mobile.goto(url);await mobile.waitForFunction(()=>window.__ready);
@@ -97,6 +115,13 @@ for(const webgl of [false,true]){
       await mobile.locator('#knowledge-image').evaluate(i=>i.decode());
       assert.equal(await mobile.locator('#knowledge-modal').getAttribute('data-topic'),'column');
       await mobile.screenshot({path:'tests/results/column-knowledge-mobile.png'});
+      await mobile.locator('#knowledge-close').tap();
+      assert.equal(await mobile.locator('#knowledge-modal').isVisible(),false);
+      await mobile.setViewportSize({width:844,height:390});
+      await mobile.locator('#railing-knowledge-hotspot').tap();
+      await mobile.locator('#knowledge-image').evaluate(i=>i.decode());
+      assert.equal(await mobile.locator('#knowledge-modal').getAttribute('data-topic'),'railing');
+      await mobile.screenshot({path:'tests/results/railing-knowledge-mobile.png'});
       await mobile.locator('#knowledge-close').tap();
       assert.equal(await mobile.locator('#knowledge-modal').isVisible(),false);
       await mobile.close();

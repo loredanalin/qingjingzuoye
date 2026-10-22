@@ -53,6 +53,7 @@ reference = inline('reference', (1538, 954), 86)
 clean = inline('clean', (1538, 954), 84)
 column = 'data:image/png;base64,' + base64.b64encode((ASSETS / 'red-column.png').read_bytes()).decode()
 dialogue_frame = 'data:image/svg+xml;base64,' + base64.b64encode((ASSETS / 'dialogue-frame.svg').read_bytes()).decode()
+railing_poster = 'data:image/png;base64,' + base64.b64encode((ASSETS / 'railing-knowledge.png').read_bytes()).decode()
 column_poster = 'data:image/png;base64,' + base64.b64encode((ASSETS / 'column-knowledge.png').read_bytes()).decode()
 knowledge_poster = 'data:image/png;base64,' + base64.b64encode((ASSETS / 'liangfang-knowledge.png').read_bytes()).decode()
 bundle = subprocess.check_output(['node', '--input-type=module', '-e',
@@ -89,6 +90,7 @@ font-size:clamp(16px,2.55cqw,42px);line-height:1.75;letter-spacing:.12em;overflo
 .knowledge-hotspot{position:absolute;z-index:7;left:38.7%;top:15.9%;width:48px;height:48px;transform:translate(-50%,-50%);
 border:0;padding:0;background:transparent;color:#ffe1a0;cursor:pointer;pointer-events:auto;visibility:visible;touch-action:manipulation}
 #column-knowledge-hotspot{left:61.6%;top:38%}
+#railing-knowledge-hotspot{left:78.5%;top:64%}
 .knowledge-hotspot::before,.knowledge-hotspot::after{content:"";position:absolute;inset:9px;border:1px solid #ffe2a3;border-radius:50%;
 box-shadow:0 0 9px #f6c26899;animation:knowledge-pulse 2.8s ease-out infinite}
 .knowledge-hotspot::after{animation-delay:1.4s}
@@ -140,7 +142,11 @@ display:grid;place-items:center;width:42px;height:42px;padding:0;border:1px soli
 </button>
 <button id="column-knowledge-hotspot" class="knowledge-hotspot" data-topic="column" type="button" aria-label="查看唐代木构柱科普" title="点击查看唐代木构柱" hidden>
 <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 1.5 14.7 9.3 22.5 12 14.7 14.7 12 22.5 9.3 14.7 1.5 12 9.3 9.3Z" fill="#ffe2a3"/><circle cx="12" cy="12" r="2" fill="#fff9df"/></svg>
+</button>
+<button id="railing-knowledge-hotspot" class="knowledge-hotspot" data-topic="railing" type="button" aria-label="查看唐代栏杆科普" title="点击查看唐代栏杆" hidden>
+<svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 1.5 14.7 9.3 22.5 12 14.7 14.7 12 22.5 9.3 14.7 1.5 12 9.3 9.3Z" fill="#ffe2a3"/><circle cx="12" cy="12" r="2" fill="#fff9df"/></svg>
 </button></div><div id="paper"></div>
+<template id="railing-knowledge-content"><img src="__RAILING_POSTER__" alt="认识唐代建筑中的栏杆。介绍整体构造、通用构件称谓、材料与形式、纹样、空间功能及观察方法，注明艺术示意与史实边界。"></template>
 <template id="column-knowledge-content"><img src="__COLUMN_POSTER__" alt="唐代木构建筑的柱：承重与装饰。介绍柱身、柱头与斗栱、柱础、彩饰与纹样，区分收分、卷杀与侧脚，并注明艺术示意与史实边界。"></template>
 <aside id="narration" data-dialogue="narration" aria-labelledby="narration-speaker" aria-live="polite" aria-atomic="true">
 <img id="narration-frame" src="__DIALOGUE_FRAME__" alt="" draggable="false" aria-hidden="true">
@@ -178,7 +184,8 @@ var hotspots=document.querySelectorAll('.knowledge-hotspot'),activeHotspot=null,
 var viewport=document.getElementById('knowledge-viewport'),zoomButton=document.getElementById('knowledge-zoom');
 var image=document.getElementById('knowledge-image'),closeButton=document.getElementById('knowledge-close'),scene=document.getElementById('stage');
 var columnImage=document.getElementById('column-knowledge-content').content.firstElementChild;
-var posters={liangfang:{src:image.src,alt:image.alt,label:'梁枋彩画科普'},column:{src:columnImage.getAttribute('src'),alt:columnImage.alt,label:'唐代木构柱科普'}};
+var railingImage=document.getElementById('railing-knowledge-content').content.firstElementChild;
+var posters={liangfang:{src:image.src,alt:image.alt,label:'梁枋彩画科普'},column:{src:columnImage.getAttribute('src'),alt:columnImage.alt,label:'唐代木构柱科普'},railing:{src:railingImage.getAttribute('src'),alt:railingImage.alt,label:'唐代栏杆科普'}};
 window.__knowledgeOpen=false;
 window.addEventListener('dialogue-finished',function(){hotspots.forEach(function(h){h.hidden=false;});},{once:true});
 function resetZoom(){modal.classList.remove('is-enlarged');zoomButton.setAttribute('aria-pressed','false');zoomButton.setAttribute('aria-label','放大查看科普图');viewport.scrollLeft=viewport.scrollTop=0;}
@@ -258,7 +265,7 @@ if(window.__renderThree)window.__renderThree(window.__sceneDebug);
 requestAnimationFrame(tick);
 })();
 </script></body></html>'''
-for token, value in [('__REFERENCE__', reference), ('__CLEAN__', clean), ('__COLUMN__', column), ('__DIALOGUE_FRAME__', dialogue_frame), ('__KNOWLEDGE_POSTER__', knowledge_poster), ('__COLUMN_POSTER__', column_poster), ('__PLANTS__', plants), ('__RAILING__', railing), ('__DISTANT__', distant), ('__BUNDLE__', bundle)]:
+for token, value in [('__REFERENCE__', reference), ('__CLEAN__', clean), ('__COLUMN__', column), ('__DIALOGUE_FRAME__', dialogue_frame), ('__KNOWLEDGE_POSTER__', knowledge_poster), ('__COLUMN_POSTER__', column_poster), ('__RAILING_POSTER__', railing_poster), ('__PLANTS__', plants), ('__RAILING__', railing), ('__DISTANT__', distant), ('__BUNDLE__', bundle)]:
     html = html.replace(token, value)
 if remainders := [t for t in __import__('re').findall(r'__[A-Z_]+__', html) if t not in ('__THREE__', '__THREE_DEVTOOLS__')]:
     raise ValueError(remainders)
