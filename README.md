@@ -8,7 +8,7 @@
 
 下载 `deliverables/courtyard-offline.zip`，解压后用 Chrome、Edge 或 Firefox 打开 `courtyard-offline.html`。所有图片和脚本已内嵌，无需网络、服务器或安装依赖。
 
-ZIP 还包含独立柱子透明 PNG、定位 JSON、中文使用说明和 SHA-256 校验清单。按 `0` 或 Home 复位，`+` / `-` 缩放。画面底部显示固定的旁白对话框，朱红描金名牌上写“旁白”，浅色纸底展示指定正文；不添加控制按钮。
+ZIP 还包含独立柱子透明 PNG、定位 JSON、中文使用说明和 SHA-256 校验清单。按 `0` 或 Home 复位，`+` / `-` 缩放。画面底部先显示旁白，点击切换至白居易，再次点击结束对话。
 
 ## 备份内容
 
@@ -47,6 +47,7 @@ python -m http.server 5180 --bind 127.0.0.1 --directory /workspace
 ```sh
 npm test
 npm run test:webgl
+npm run test:knowledge
 node tests/gap-occlusion.mjs
 node tests/fence-occlusion.mjs
 ```
@@ -60,3 +61,9 @@ node tests/fence-occlusion.mjs
 首次点击或轻触画面任意位置（含对话框），旁白切换为白居易：“今日尚有公务，须早些出门。”。第二次点击隐藏整个对话框，仅显示场景；刷新恢复初始旁白。
 
 对话正文在浅色框内水平、垂直居中。白居易对话结束后隐藏整个对话框，场景缩放和鼠标动效保持。
+
+## 梁枋彩画科普入口
+
+两轮对话结束后，梁枋与壁面交界附近会出现轻微闪光入口。点击入口可打开透明底的“梁枋彩画”科普图，场景背景压暗。点击图片可放大阅读，再点还原；点击外侧、右上角关闭按钮或按 Esc 可返回场景。阅读期间暂停场景移动，关闭后恢复缩放和鼠标视差。
+
+科普图已内嵌为带透明通道的 PNG；ZIP 另附独立图片及校订文案。图中场景为艺术示意，不作为唐代原状或统一配色的复原依据。

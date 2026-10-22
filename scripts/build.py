@@ -53,6 +53,7 @@ reference = inline('reference', (1538, 954), 86)
 clean = inline('clean', (1538, 954), 84)
 column = 'data:image/png;base64,' + base64.b64encode((ASSETS / 'red-column.png').read_bytes()).decode()
 dialogue_frame = 'data:image/svg+xml;base64,' + base64.b64encode((ASSETS / 'dialogue-frame.svg').read_bytes()).decode()
+knowledge_poster = 'data:image/png;base64,' + base64.b64encode((ASSETS / 'liangfang-knowledge.png').read_bytes()).decode()
 bundle = subprocess.check_output(['node', '--input-type=module', '-e',
     "import {buildSync} from 'esbuild'; const r=buildSync({entryPoints:['scripts/webgl.js'],bundle:true,format:'iife',write:false,minify:true,target:'es2019'});process.stdout.write(r.outputFiles[0].text)"], cwd=ROOT).decode()
 html = '''<!doctype html>
@@ -60,7 +61,7 @@ html = '''<!doctype html>
 <meta name="theme-color" content="#bb9568"><link rel="icon" href="data:,"><title>庭院 · 录像恢复版</title>
 <style>
 *{box-sizing:border-box}html,body{margin:0;width:100%;height:100%;overflow:hidden;background:#bb9568;overscroll-behavior:none}
-#stage{position:fixed;left:50%;top:50%;width:max(104vw,167.7vh);aspect-ratio:1538/954;isolation:isolate;pointer-events:none;
+#stage{position:fixed;z-index:6;left:50%;top:50%;width:max(104vw,167.7vh);aspect-ratio:1538/954;isolation:isolate;pointer-events:none;
 transform:translate(-50%,-50%) translate3d(var(--px,0px),var(--py,0px),0) perspective(1800px) rotateX(var(--pitch,0deg)) rotateZ(var(--roll,0deg)) scale(var(--zoom,1));
 transform-origin:76% 45%;will-change:transform}
 #room,#architecture,#garden,#fence,#distant,#column{position:absolute;inset:0;width:100%;height:100%;display:block}
@@ -83,6 +84,30 @@ font-size:clamp(16px,2.55cqw,42px);line-height:1.75;letter-spacing:.12em;overflo
 @media(max-width:700px){#narration{left:50%;width:calc(100vw - 20px);height:280px;aspect-ratio:auto;bottom:max(12px,env(safe-area-inset-bottom))}
 #narration-speaker{font-size:23px;letter-spacing:.18em}#narration-text{left:7%;right:7%;font-size:18px;line-height:1.8;letter-spacing:.04em}}
 @media(max-width:700px) and (max-height:500px){#narration{height:auto;aspect-ratio:3.6;bottom:max(.9vh,env(safe-area-inset-bottom))}#narration-speaker{font-size:clamp(17px,2.73cqw,23px)}#narration-text{font-size:clamp(14px,2.55cqw,18px);line-height:1.7}}
+#knowledge-hotspot[hidden],#knowledge-modal[hidden]{display:none!important}
+#knowledge-hotspot{position:absolute;z-index:7;left:38.7%;top:15.9%;width:48px;height:48px;transform:translate(-50%,-50%);
+border:0;padding:0;background:transparent;color:#ffe1a0;cursor:pointer;pointer-events:auto;visibility:visible;touch-action:manipulation}
+#knowledge-hotspot::before,#knowledge-hotspot::after{content:"";position:absolute;inset:9px;border:1px solid #ffe2a3;border-radius:50%;
+box-shadow:0 0 9px #f6c26899;animation:knowledge-pulse 2.8s ease-out infinite}
+#knowledge-hotspot::after{animation-delay:1.4s}
+#knowledge-hotspot svg{position:absolute;inset:13px;width:22px;height:22px;filter:drop-shadow(0 0 6px #ffc65b);transition:filter .2s}
+#knowledge-hotspot:hover svg,#knowledge-hotspot:focus-visible svg{filter:drop-shadow(0 0 11px #fff0c0)}
+#knowledge-hotspot:focus-visible{outline:1px solid #fff0c0;outline-offset:3px;border-radius:50%}
+@keyframes knowledge-pulse{0%{transform:scale(.65);opacity:.9}85%,100%{transform:scale(1.65);opacity:0}}
+#knowledge-modal{position:fixed;inset:0;z-index:40;display:grid;place-items:center;background:rgba(0,0,0,.76);animation:knowledge-reveal .22s ease-out}
+#knowledge-viewport{width:94vw;height:92vh;height:92dvh;overflow:auto;display:flex;align-items:center;justify-content:center;
+background:transparent;overscroll-behavior:contain;scrollbar-width:thin;scrollbar-color:#bda36d66 transparent}
+#knowledge-zoom{display:block;flex:none;width:max-content;margin:0;padding:0;border:0;background:transparent;line-height:0;cursor:zoom-in}
+#knowledge-image{display:block;width:auto;height:auto;max-width:90vw;max-height:88vh;max-height:88dvh;object-fit:contain;background:transparent;filter:drop-shadow(0 8px 18px #0006)}
+#knowledge-modal.is-enlarged #knowledge-viewport{display:block}
+#knowledge-modal.is-enlarged #knowledge-zoom{margin:0 auto;cursor:zoom-out}
+#knowledge-modal.is-enlarged #knowledge-image{width:max(1526px,125vw);max-width:none;max-height:none;height:auto}
+#knowledge-close{position:fixed;top:max(15px,env(safe-area-inset-top));right:max(18px,env(safe-area-inset-right));z-index:1;
+display:grid;place-items:center;width:42px;height:42px;padding:0;border:1px solid #ecd7ad66;border-radius:50%;background:#20170bc9;color:#f9ebca;font:30px/1 sans-serif;cursor:pointer}
+#knowledge-close:focus-visible,#knowledge-zoom:focus-visible{outline:2px solid #ffe2a3;outline-offset:4px}
+.knowledge-open #knowledge-hotspot::before,.knowledge-open #knowledge-hotspot::after{animation-play-state:paused}
+@keyframes knowledge-reveal{from{opacity:0}to{opacity:1}}
+@media(prefers-reduced-motion:reduce){#knowledge-hotspot::before,#knowledge-hotspot::after{animation:none;opacity:.7}#knowledge-hotspot::after{display:none}#knowledge-modal{animation:none}}
 </style></head><body>
 <div id="stage"><i id="focus" aria-hidden="true"></i>
 <svg id="room" viewBox="0 0 1538 954" preserveAspectRatio="none" aria-hidden="true"><defs>
@@ -107,12 +132,21 @@ font-size:clamp(16px,2.55cqw,42px);line-height:1.75;letter-spacing:.12em;overflo
 <g clip-path="url(#column-upper)"><use href="#column-picture" transform="translate(877 0) scale(0.531835206 0.514851485)"/></g>
 <g clip-path="url(#column-gold)"><use href="#column-picture" transform="translate(877 144.055556) scale(0.531835206 0.372222222)"/></g>
 <g clip-path="url(#column-stone)"><use href="#column-picture" transform="translate(877 124.420168) scale(0.531835206 0.386554622)"/></g>
-</g></svg></div><div id="paper"></div>
+</g></svg>
+<button id="knowledge-hotspot" type="button" aria-label="查看梁枋彩画科普" title="点击查看梁枋彩画" hidden>
+<svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 1.5 14.7 9.3 22.5 12 14.7 14.7 12 22.5 9.3 14.7 1.5 12 9.3 9.3Z" fill="#ffe2a3"/><circle cx="12" cy="12" r="2" fill="#fff9df"/></svg>
+</button></div><div id="paper"></div>
 <aside id="narration" data-dialogue="narration" aria-labelledby="narration-speaker" aria-live="polite" aria-atomic="true">
 <img id="narration-frame" src="__DIALOGUE_FRAME__" alt="" draggable="false" aria-hidden="true">
 <span id="narration-speaker">旁白</span>
 <p id="narration-text">晨光初透，长安渐醒。元和三年，白居易居于长安。新的一日，从庭院中的第一缕阳光开始。</p>
 </aside>
+<section id="knowledge-modal" role="dialog" aria-modal="true" aria-label="梁枋彩画科普" hidden>
+<button id="knowledge-close" type="button" aria-label="关闭科普图" title="关闭（Esc）">×</button>
+<div id="knowledge-viewport" tabindex="0" aria-label="科普图阅读区域">
+<button id="knowledge-zoom" type="button" aria-label="放大查看科普图" aria-pressed="false" title="点击放大，再次点击还原">
+<img id="knowledge-image" src="__KNOWLEDGE_POSTER__" alt="梁枋彩画：认识唐代木构装饰。科普图包含木构件、装饰纹样、配色示意及史实边界说明。" draggable="false">
+</button></div></section>
 <script>
 (function(){'use strict';
 var dialogue=document.getElementById('narration'),step=0;
@@ -125,10 +159,41 @@ dialogue.setAttribute('data-dialogue','bai-juyi');
 dialogue.hidden=true;
 dialogue.setAttribute('data-dialogue','finished');
 window.removeEventListener('click',advanceDialogue);
+window.dispatchEvent(new Event('dialogue-finished'));
 }
 step++;
 }
 window.addEventListener('click',advanceDialogue);
+})();
+</script>
+<script>
+(function(){'use strict';
+var hotspot=document.getElementById('knowledge-hotspot'),modal=document.getElementById('knowledge-modal');
+var viewport=document.getElementById('knowledge-viewport'),zoomButton=document.getElementById('knowledge-zoom');
+var image=document.getElementById('knowledge-image'),closeButton=document.getElementById('knowledge-close'),scene=document.getElementById('stage');
+window.__knowledgeOpen=false;
+window.addEventListener('dialogue-finished',function(){hotspot.hidden=false;},{once:true});
+function resetZoom(){modal.classList.remove('is-enlarged');zoomButton.setAttribute('aria-pressed','false');zoomButton.setAttribute('aria-label','放大查看科普图');viewport.scrollLeft=viewport.scrollTop=0;}
+function openKnowledge(){if(hotspot.hidden)return;resetZoom();modal.hidden=false;window.__knowledgeOpen=true;
+scene.inert=true;document.body.classList.add('knowledge-open');closeButton.focus({preventScroll:true});}
+function closeKnowledge(){modal.hidden=true;window.__knowledgeOpen=false;scene.inert=false;document.body.classList.remove('knowledge-open');
+resetZoom();hotspot.focus({preventScroll:true});}
+hotspot.addEventListener('click',function(e){e.stopPropagation();openKnowledge();});
+closeButton.addEventListener('click',closeKnowledge);
+modal.addEventListener('click',function(e){if(e.target===modal||e.target===viewport)closeKnowledge();});
+zoomButton.addEventListener('click',function(e){
+if(modal.classList.contains('is-enlarged')){resetZoom();return;}
+var rect=image.getBoundingClientRect(),rx=Math.max(0,Math.min(1,(e.clientX-rect.left)/rect.width)),ry=Math.max(0,Math.min(1,(e.clientY-rect.top)/rect.height));
+if(e.detail===0){rx=ry=.5;}
+modal.classList.add('is-enlarged');zoomButton.setAttribute('aria-pressed','true');zoomButton.setAttribute('aria-label','还原科普图大小');
+requestAnimationFrame(function(){viewport.scrollLeft=rx*image.offsetWidth-viewport.clientWidth/2;viewport.scrollTop=ry*image.offsetHeight-viewport.clientHeight/2;});
+});
+document.addEventListener('keydown',function(e){if(!window.__knowledgeOpen)return;
+if(e.key==='Escape'){e.preventDefault();closeKnowledge();}
+else if(e.key==='Tab'){var focusable=[closeButton,viewport,zoomButton],first=focusable[0],last=focusable[2];
+if(e.shiftKey&&document.activeElement===first){e.preventDefault();last.focus();}
+else if(!e.shiftKey&&document.activeElement===last){e.preventDefault();first.focus();}}
+});
 })();
 </script>
 <script>__BUNDLE__</script>
@@ -138,15 +203,16 @@ var stage=document.getElementById('stage'),plants=document.querySelectorAll('#ga
 var reduce=window.matchMedia&&window.matchMedia('(prefers-reduced-motion: reduce)');
 var mx=0,my=0,x=0,y=0,zoom=1,target=1,last=0,phase=0,energy=0,pitch=0;
 var focus={x:.76,y:.45},minZoom=1,maxZoom=2.4;
-window.addEventListener('pointermove',function(e){mx=Math.max(-1,Math.min(1,e.clientX/innerWidth*2-1));my=Math.max(-1,Math.min(1,e.clientY/innerHeight*2-1));},{passive:true});
+window.addEventListener('pointermove',function(e){if(window.__knowledgeOpen)return;mx=Math.max(-1,Math.min(1,e.clientX/innerWidth*2-1));my=Math.max(-1,Math.min(1,e.clientY/innerHeight*2-1));},{passive:true});
 document.documentElement.addEventListener('pointerleave',function(){mx=my=0;});
 window.addEventListener('blur',function(){mx=my=0;});
-window.addEventListener('wheel',function(e){e.preventDefault();var unit=e.deltaMode===1?16:e.deltaMode===2?innerHeight:1;
+window.addEventListener('wheel',function(e){if(window.__knowledgeOpen)return;e.preventDefault();var unit=e.deltaMode===1?16:e.deltaMode===2?innerHeight:1;
 var delta=Math.max(-300,Math.min(300,e.deltaY*unit));target=Math.max(minZoom,Math.min(maxZoom,target*Math.exp(delta*.001)));},{passive:false});
-window.addEventListener('keydown',function(e){if(e.key==='0'||e.key==='Home'){target=1;mx=my=0;}
+window.addEventListener('keydown',function(e){if(window.__knowledgeOpen)return;if(e.key==='0'||e.key==='Home'){target=1;mx=my=0;}
 else if(e.key==='+'||e.key==='=')target=Math.min(maxZoom,target*1.12);else if(e.key==='-')target=Math.max(minZoom,target/1.12);});
 function tick(time){
 var dt=last?Math.min((time-last)/1000,.1):.016;last=time;
+if(window.__knowledgeOpen){if(window.__renderThree&&window.__sceneDebug)window.__renderThree(window.__sceneDebug);requestAnimationFrame(tick);return;}
 var quiet=reduce&&reduce.matches,damp=1-Math.exp(-4.2*dt),before=zoom;
 zoom+=(target-zoom)*(quiet?1:damp);var delta=zoom-before,walk=Math.max(0,Math.min(1,(zoom-1)/1.4));
 phase+=Math.abs(delta)*23;var activity=quiet?0:Math.min(1,Math.abs(delta)/Math.max(.001,dt)*1.4);
@@ -182,7 +248,7 @@ if(window.__renderThree)window.__renderThree(window.__sceneDebug);
 requestAnimationFrame(tick);
 })();
 </script></body></html>'''
-for token, value in [('__REFERENCE__', reference), ('__CLEAN__', clean), ('__COLUMN__', column), ('__DIALOGUE_FRAME__', dialogue_frame), ('__PLANTS__', plants), ('__RAILING__', railing), ('__DISTANT__', distant), ('__BUNDLE__', bundle)]:
+for token, value in [('__REFERENCE__', reference), ('__CLEAN__', clean), ('__COLUMN__', column), ('__DIALOGUE_FRAME__', dialogue_frame), ('__KNOWLEDGE_POSTER__', knowledge_poster), ('__PLANTS__', plants), ('__RAILING__', railing), ('__DISTANT__', distant), ('__BUNDLE__', bundle)]:
     html = html.replace(token, value)
 if remainders := [t for t in __import__('re').findall(r'__[A-Z_]+__', html) if t not in ('__THREE__', '__THREE_DEVTOOLS__')]:
     raise ValueError(remainders)
