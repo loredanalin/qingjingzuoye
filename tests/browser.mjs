@@ -61,6 +61,18 @@ try {
     assert(box.x >= 0 && box.y >= 0 && box.x + box.width <= viewport.width && box.y + box.height <= viewport.height);
     if (viewport.width === 1270) await page.screenshot({path:'tests/results/reference-layout.png'});
   }
+  await page.setViewportSize({width:1270,height:680});
+  const dialogueBox = await page.locator('#narration').boundingBox();
+  await page.mouse.click(20,100);
+  assert.equal(await page.locator('#narration-speaker').innerText(),'白居易');
+  assert.equal(await page.locator('#narration-text').innerText(),'今日尚有公务，须早些出门。');
+  assert.deepEqual(await page.locator('#narration').boundingBox(),dialogueBox);
+  await page.locator('#narration-text').click();
+  assert.equal(await page.locator('#narration-speaker').innerText(),'白居易');
+  await page.screenshot({path:'tests/results/bai-juyi.png'});
+  await page.mouse.wheel(0,300);
+  await page.waitForFunction(()=>window.__sceneDebug.zoom>1.2);
+  assert.equal(await page.locator('#narration-text').innerText(),'今日尚有公务，须早些出门。');
   assert.deepEqual(errors, []);
   assert.deepEqual(requests, [url]);
   console.log('PASS: exact narration text; screen-fixed dialogue; mobile text fits; five plants; railing above flowers; wheel zoom; walking; bilateral parallax at 2.4x; reduced motion; no external requests/errors.');
@@ -70,6 +82,16 @@ try {
   assert(await noJS.locator('#room').isVisible());
   await noJS.screenshot({ path: 'tests/results/no-js.png' });
   await noJS.close();
+  const touch = await browser.newPage({viewport:{width:390,height:844},isMobile:true,hasTouch:true});
+  await touch.goto(url);
+  await touch.waitForFunction(()=>window.__ready);
+  assert.equal(await touch.locator('#narration-speaker').innerText(),'旁白');
+  await touch.locator('#narration-text').tap();
+  assert.equal(await touch.locator('#narration-speaker').innerText(),'白居易');
+  assert.equal(await touch.locator('#narration-text').innerText(),'今日尚有公务，须早些出门。');
+  assert(await touch.locator('#narration-text').evaluate(e=>e.scrollHeight<=e.clientHeight));
+  await touch.screenshot({path:'tests/results/bai-juyi-mobile.png'});
+  await touch.close();
   const sandboxPage = await browser.newPage();
   const html = await readFile('/workspace/courtyard-restored.html', 'utf8');
   await sandboxPage.setContent('<iframe sandbox="allow-scripts" style="width:100vw;height:100vh;border:0"></iframe>');
@@ -77,5 +99,7 @@ try {
   const frame = await (await sandboxPage.locator('iframe').elementHandle()).contentFrame();
   await frame.waitForFunction(() => window.__ready);
   assert.equal(await frame.locator('#fence img').evaluate(i => i.complete && i.naturalWidth > 500), true);
+  await frame.locator('body').click({position:{x:20,y:100}});
+  assert.equal(await frame.locator('#narration-speaker').innerText(),'白居易');
   console.log('PASS: no-JavaScript scene and opaque-origin sandbox/srcdoc preview; no WebGL required.');
 } finally { await browser.close(); }

@@ -108,11 +108,20 @@ font-size:clamp(16px,2.55cqw,42px);line-height:1.75;letter-spacing:.12em;overflo
 <g clip-path="url(#column-gold)"><use href="#column-picture" transform="translate(877 144.055556) scale(0.531835206 0.372222222)"/></g>
 <g clip-path="url(#column-stone)"><use href="#column-picture" transform="translate(877 124.420168) scale(0.531835206 0.386554622)"/></g>
 </g></svg></div><div id="paper"></div>
-<aside id="narration" aria-labelledby="narration-speaker">
+<aside id="narration" data-dialogue="narration" aria-labelledby="narration-speaker" aria-live="polite" aria-atomic="true">
 <img id="narration-frame" src="__DIALOGUE_FRAME__" alt="" draggable="false" aria-hidden="true">
 <span id="narration-speaker">旁白</span>
 <p id="narration-text">晨光初透，长安渐醒。元和三年，白居易居于长安。新的一日，从庭院中的第一缕阳光开始。</p>
 </aside>
+<script>
+(function(){'use strict';
+window.addEventListener('click',function(){
+document.getElementById('narration-speaker').textContent='白居易';
+document.getElementById('narration-text').textContent='今日尚有公务，须早些出门。';
+document.getElementById('narration').setAttribute('data-dialogue','bai-juyi');
+},{once:true});
+})();
+</script>
 <script>__BUNDLE__</script>
 <script>
 (function(){'use strict';

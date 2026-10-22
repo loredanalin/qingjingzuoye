@@ -19,6 +19,11 @@ await p.mouse.move(10,477);await p.waitForFunction(()=>window.__sceneDebug.x>45)
 await p.mouse.move(1528,477);await p.waitForFunction(()=>window.__sceneDebug.x< -45);
 await p.mouse.move(769,477);await p.waitForFunction(()=>Math.abs(window.__sceneDebug.x)<.2&&window.__sceneDebug.walkEnergy<.01);
 await p.screenshot({path:'tests/results/webgl-zoom.png'});
+const targetZoom=await p.evaluate(()=>window.__sceneDebug.targetZoom);
+await p.mouse.click(20,100);
+assert.equal(await p.locator('#narration-speaker').innerText(),'白居易');
+assert.equal(await p.locator('#narration-text').innerText(),'今日尚有公务，须早些出门。');
+assert.equal(await p.evaluate(()=>window.__sceneDebug.targetZoom),targetZoom);
 assert.equal(await p.evaluate(()=>window.__threeDebug.cameraZ<27),true);
 assert.deepEqual(errors,[]);assert.deepEqual(external,['http://127.0.0.1:5180/courtyard-restored.html']);
 await p.evaluate(()=>document.querySelector('#webgl-scene').getContext('webgl2').getExtension('WEBGL_lose_context').loseContext());
