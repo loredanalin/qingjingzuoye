@@ -11,8 +11,10 @@ for(const webgl of [false,true]){
     await page.goto(url);
     await page.waitForFunction(w=>w?window.__threeReady:window.__ready,webgl);
     assert.equal(await page.locator('#knowledge-hotspot').isVisible(),false);
+    assert.equal(await page.locator('#column-knowledge-hotspot').isVisible(),false);
     await page.mouse.click(20,100);
     assert.equal(await page.locator('#knowledge-hotspot').isVisible(),false);
+    assert.equal(await page.locator('#column-knowledge-hotspot').isVisible(),false);
     await page.mouse.click(20,100);
     assert.equal(await page.locator('#narration').isVisible(),false);
     assert.equal(await page.locator('#knowledge-hotspot').isVisible(),true);
@@ -53,8 +55,32 @@ for(const webgl of [false,true]){
     await page.locator('#knowledge-close').click();
     assert.equal(await page.locator('#knowledge-modal').isVisible(),false);
     assert.equal(await page.locator('#narration').isVisible(),false);
+    const beamSrc=await page.locator('#knowledge-image').getAttribute('src');
+    assert.equal(await page.locator('#column-knowledge-hotspot').isVisible(),true);
+    const columnPosition=await page.locator('#column-knowledge-hotspot').evaluate(h=>({x:parseFloat(getComputedStyle(h).left)/h.parentElement.clientWidth,y:parseFloat(getComputedStyle(h).top)/h.parentElement.clientHeight}));
+    assert(Math.abs(columnPosition.x-.616)<.001&&Math.abs(columnPosition.y-.38)<.001);
+    await page.locator('#column-knowledge-hotspot').click();
+    await page.locator('#knowledge-image').evaluate(i=>i.decode());
+    assert.equal(await page.locator('#knowledge-modal').getAttribute('data-topic'),'column');
+    assert.equal(await page.locator('#knowledge-modal').getAttribute('aria-label'),'唐代木构柱科普');
+    assert.notEqual(await page.locator('#knowledge-image').getAttribute('src'),beamSrc);
+    assert.equal(await page.locator('#knowledge-image').evaluate(i=>{
+      const c=document.createElement('canvas');c.width=c.height=1;
+      const g=c.getContext('2d');g.drawImage(i,0,0);return g.getImageData(0,0,1,1).data[3];
+    }),0,'column poster has a transparent outer background');
+    await page.screenshot({path:`tests/results/column-knowledge-modal-${webgl?'webgl':'css'}.png`});
+    await page.locator('#knowledge-zoom').click();
+    assert.equal(await page.locator('#knowledge-zoom').getAttribute('aria-pressed'),'true');
+    await page.keyboard.press('Escape');
+    assert.equal(await page.evaluate(()=>document.activeElement.id),'column-knowledge-hotspot');
+    await page.locator('#knowledge-hotspot').click();
+    await page.locator('#knowledge-image').evaluate(i=>i.decode());
+    assert.equal(await page.locator('#knowledge-modal').getAttribute('data-topic'),'liangfang');
+    assert.equal(await page.locator('#knowledge-image').getAttribute('src'),beamSrc);
+    assert.equal(await page.locator('#knowledge-zoom').getAttribute('aria-pressed'),'false');
+    await page.locator('#knowledge-close').click();
     assert.deepEqual(errors,[]);assert.deepEqual(requests,[url]);
-    console.log(`PASS ${webgl?'WebGL':'CSS'}: hotspot after two dialogues; transparent poster; dark modal; reading zoom; frozen scene; focus; Escape/backdrop/button close; scene resumes; offline.`);
+    console.log(`PASS ${webgl?'WebGL':'CSS'}: both hotspots after two dialogues; correct transparent posters; switch topics; dark modal; reading zoom; frozen scene; focus; Escape/backdrop/button close; scene resumes; offline.`);
     if(!webgl){
       const mobile=await browser.newPage({viewport:{width:390,height:844},isMobile:true,hasTouch:true});
       await mobile.goto(url);await mobile.waitForFunction(()=>window.__ready);
@@ -65,6 +91,12 @@ for(const webgl of [false,true]){
       await mobile.screenshot({path:'tests/results/knowledge-mobile.png'});
       await mobile.locator('#knowledge-zoom').tap();
       assert(await mobile.locator('#knowledge-viewport').evaluate(e=>e.scrollWidth>e.clientWidth&&e.scrollHeight>e.clientHeight));
+      await mobile.locator('#knowledge-close').tap();
+      assert.equal(await mobile.locator('#knowledge-modal').isVisible(),false);
+      await mobile.locator('#column-knowledge-hotspot').tap();
+      await mobile.locator('#knowledge-image').evaluate(i=>i.decode());
+      assert.equal(await mobile.locator('#knowledge-modal').getAttribute('data-topic'),'column');
+      await mobile.screenshot({path:'tests/results/column-knowledge-mobile.png'});
       await mobile.locator('#knowledge-close').tap();
       assert.equal(await mobile.locator('#knowledge-modal').isVisible(),false);
       await mobile.close();

@@ -53,6 +53,7 @@ reference = inline('reference', (1538, 954), 86)
 clean = inline('clean', (1538, 954), 84)
 column = 'data:image/png;base64,' + base64.b64encode((ASSETS / 'red-column.png').read_bytes()).decode()
 dialogue_frame = 'data:image/svg+xml;base64,' + base64.b64encode((ASSETS / 'dialogue-frame.svg').read_bytes()).decode()
+column_poster = 'data:image/png;base64,' + base64.b64encode((ASSETS / 'column-knowledge.png').read_bytes()).decode()
 knowledge_poster = 'data:image/png;base64,' + base64.b64encode((ASSETS / 'liangfang-knowledge.png').read_bytes()).decode()
 bundle = subprocess.check_output(['node', '--input-type=module', '-e',
     "import {buildSync} from 'esbuild'; const r=buildSync({entryPoints:['scripts/webgl.js'],bundle:true,format:'iife',write:false,minify:true,target:'es2019'});process.stdout.write(r.outputFiles[0].text)"], cwd=ROOT).decode()
@@ -84,15 +85,16 @@ font-size:clamp(16px,2.55cqw,42px);line-height:1.75;letter-spacing:.12em;overflo
 @media(max-width:700px){#narration{left:50%;width:calc(100vw - 20px);height:280px;aspect-ratio:auto;bottom:max(12px,env(safe-area-inset-bottom))}
 #narration-speaker{font-size:23px;letter-spacing:.18em}#narration-text{left:7%;right:7%;font-size:18px;line-height:1.8;letter-spacing:.04em}}
 @media(max-width:700px) and (max-height:500px){#narration{height:auto;aspect-ratio:3.6;bottom:max(.9vh,env(safe-area-inset-bottom))}#narration-speaker{font-size:clamp(17px,2.73cqw,23px)}#narration-text{font-size:clamp(14px,2.55cqw,18px);line-height:1.7}}
-#knowledge-hotspot[hidden],#knowledge-modal[hidden]{display:none!important}
-#knowledge-hotspot{position:absolute;z-index:7;left:38.7%;top:15.9%;width:48px;height:48px;transform:translate(-50%,-50%);
+.knowledge-hotspot[hidden],#knowledge-modal[hidden]{display:none!important}
+.knowledge-hotspot{position:absolute;z-index:7;left:38.7%;top:15.9%;width:48px;height:48px;transform:translate(-50%,-50%);
 border:0;padding:0;background:transparent;color:#ffe1a0;cursor:pointer;pointer-events:auto;visibility:visible;touch-action:manipulation}
-#knowledge-hotspot::before,#knowledge-hotspot::after{content:"";position:absolute;inset:9px;border:1px solid #ffe2a3;border-radius:50%;
+#column-knowledge-hotspot{left:61.6%;top:38%}
+.knowledge-hotspot::before,.knowledge-hotspot::after{content:"";position:absolute;inset:9px;border:1px solid #ffe2a3;border-radius:50%;
 box-shadow:0 0 9px #f6c26899;animation:knowledge-pulse 2.8s ease-out infinite}
-#knowledge-hotspot::after{animation-delay:1.4s}
-#knowledge-hotspot svg{position:absolute;inset:13px;width:22px;height:22px;filter:drop-shadow(0 0 6px #ffc65b);transition:filter .2s}
-#knowledge-hotspot:hover svg,#knowledge-hotspot:focus-visible svg{filter:drop-shadow(0 0 11px #fff0c0)}
-#knowledge-hotspot:focus-visible{outline:1px solid #fff0c0;outline-offset:3px;border-radius:50%}
+.knowledge-hotspot::after{animation-delay:1.4s}
+.knowledge-hotspot svg{position:absolute;inset:13px;width:22px;height:22px;filter:drop-shadow(0 0 6px #ffc65b);transition:filter .2s}
+.knowledge-hotspot:hover svg,.knowledge-hotspot:focus-visible svg{filter:drop-shadow(0 0 11px #fff0c0)}
+.knowledge-hotspot:focus-visible{outline:1px solid #fff0c0;outline-offset:3px;border-radius:50%}
 @keyframes knowledge-pulse{0%{transform:scale(.65);opacity:.9}85%,100%{transform:scale(1.65);opacity:0}}
 #knowledge-modal{position:fixed;inset:0;z-index:40;display:grid;place-items:center;background:rgba(0,0,0,.76);animation:knowledge-reveal .22s ease-out}
 #knowledge-viewport{width:94vw;height:92vh;height:92dvh;overflow:auto;display:flex;align-items:center;justify-content:center;
@@ -105,9 +107,9 @@ background:transparent;overscroll-behavior:contain;scrollbar-width:thin;scrollba
 #knowledge-close{position:fixed;top:max(15px,env(safe-area-inset-top));right:max(18px,env(safe-area-inset-right));z-index:1;
 display:grid;place-items:center;width:42px;height:42px;padding:0;border:1px solid #ecd7ad66;border-radius:50%;background:#20170bc9;color:#f9ebca;font:30px/1 sans-serif;cursor:pointer}
 #knowledge-close:focus-visible,#knowledge-zoom:focus-visible{outline:2px solid #ffe2a3;outline-offset:4px}
-.knowledge-open #knowledge-hotspot::before,.knowledge-open #knowledge-hotspot::after{animation-play-state:paused}
+.knowledge-open .knowledge-hotspot::before,.knowledge-open .knowledge-hotspot::after{animation-play-state:paused}
 @keyframes knowledge-reveal{from{opacity:0}to{opacity:1}}
-@media(prefers-reduced-motion:reduce){#knowledge-hotspot::before,#knowledge-hotspot::after{animation:none;opacity:.7}#knowledge-hotspot::after{display:none}#knowledge-modal{animation:none}}
+@media(prefers-reduced-motion:reduce){.knowledge-hotspot::before,.knowledge-hotspot::after{animation:none;opacity:.7}.knowledge-hotspot::after{display:none}#knowledge-modal{animation:none}}
 </style></head><body>
 <div id="stage"><i id="focus" aria-hidden="true"></i>
 <svg id="room" viewBox="0 0 1538 954" preserveAspectRatio="none" aria-hidden="true"><defs>
@@ -133,9 +135,13 @@ display:grid;place-items:center;width:42px;height:42px;padding:0;border:1px soli
 <g clip-path="url(#column-gold)"><use href="#column-picture" transform="translate(877 144.055556) scale(0.531835206 0.372222222)"/></g>
 <g clip-path="url(#column-stone)"><use href="#column-picture" transform="translate(877 124.420168) scale(0.531835206 0.386554622)"/></g>
 </g></svg>
-<button id="knowledge-hotspot" type="button" aria-label="查看梁枋彩画科普" title="点击查看梁枋彩画" hidden>
+<button id="knowledge-hotspot" class="knowledge-hotspot" data-topic="liangfang" type="button" aria-label="查看梁枋彩画科普" title="点击查看梁枋彩画" hidden>
+<svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 1.5 14.7 9.3 22.5 12 14.7 14.7 12 22.5 9.3 14.7 1.5 12 9.3 9.3Z" fill="#ffe2a3"/><circle cx="12" cy="12" r="2" fill="#fff9df"/></svg>
+</button>
+<button id="column-knowledge-hotspot" class="knowledge-hotspot" data-topic="column" type="button" aria-label="查看唐代木构柱科普" title="点击查看唐代木构柱" hidden>
 <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 1.5 14.7 9.3 22.5 12 14.7 14.7 12 22.5 9.3 14.7 1.5 12 9.3 9.3Z" fill="#ffe2a3"/><circle cx="12" cy="12" r="2" fill="#fff9df"/></svg>
 </button></div><div id="paper"></div>
+<template id="column-knowledge-content"><img src="__COLUMN_POSTER__" alt="唐代木构建筑的柱：承重与装饰。介绍柱身、柱头与斗栱、柱础、彩饰与纹样，区分收分、卷杀与侧脚，并注明艺术示意与史实边界。"></template>
 <aside id="narration" data-dialogue="narration" aria-labelledby="narration-speaker" aria-live="polite" aria-atomic="true">
 <img id="narration-frame" src="__DIALOGUE_FRAME__" alt="" draggable="false" aria-hidden="true">
 <span id="narration-speaker">旁白</span>
@@ -168,17 +174,21 @@ window.addEventListener('click',advanceDialogue);
 </script>
 <script>
 (function(){'use strict';
-var hotspot=document.getElementById('knowledge-hotspot'),modal=document.getElementById('knowledge-modal');
+var hotspots=document.querySelectorAll('.knowledge-hotspot'),activeHotspot=null,modal=document.getElementById('knowledge-modal');
 var viewport=document.getElementById('knowledge-viewport'),zoomButton=document.getElementById('knowledge-zoom');
 var image=document.getElementById('knowledge-image'),closeButton=document.getElementById('knowledge-close'),scene=document.getElementById('stage');
+var columnImage=document.getElementById('column-knowledge-content').content.firstElementChild;
+var posters={liangfang:{src:image.src,alt:image.alt,label:'梁枋彩画科普'},column:{src:columnImage.getAttribute('src'),alt:columnImage.alt,label:'唐代木构柱科普'}};
 window.__knowledgeOpen=false;
-window.addEventListener('dialogue-finished',function(){hotspot.hidden=false;},{once:true});
+window.addEventListener('dialogue-finished',function(){hotspots.forEach(function(h){h.hidden=false;});},{once:true});
 function resetZoom(){modal.classList.remove('is-enlarged');zoomButton.setAttribute('aria-pressed','false');zoomButton.setAttribute('aria-label','放大查看科普图');viewport.scrollLeft=viewport.scrollTop=0;}
-function openKnowledge(){if(hotspot.hidden)return;resetZoom();modal.hidden=false;window.__knowledgeOpen=true;
+function openKnowledge(hotspot){if(hotspot.hidden)return;activeHotspot=hotspot;var topic=hotspot.dataset.topic,poster=posters[topic];
+image.src=poster.src;image.alt=poster.alt;modal.setAttribute('aria-label',poster.label);modal.dataset.topic=topic;
+resetZoom();modal.hidden=false;window.__knowledgeOpen=true;
 scene.inert=true;document.body.classList.add('knowledge-open');closeButton.focus({preventScroll:true});}
 function closeKnowledge(){modal.hidden=true;window.__knowledgeOpen=false;scene.inert=false;document.body.classList.remove('knowledge-open');
-resetZoom();hotspot.focus({preventScroll:true});}
-hotspot.addEventListener('click',function(e){e.stopPropagation();openKnowledge();});
+resetZoom();if(activeHotspot)activeHotspot.focus({preventScroll:true});}
+hotspots.forEach(function(h){h.addEventListener('click',function(e){e.stopPropagation();openKnowledge(h);});});
 closeButton.addEventListener('click',closeKnowledge);
 modal.addEventListener('click',function(e){if(e.target===modal||e.target===viewport)closeKnowledge();});
 zoomButton.addEventListener('click',function(e){
@@ -248,7 +258,7 @@ if(window.__renderThree)window.__renderThree(window.__sceneDebug);
 requestAnimationFrame(tick);
 })();
 </script></body></html>'''
-for token, value in [('__REFERENCE__', reference), ('__CLEAN__', clean), ('__COLUMN__', column), ('__DIALOGUE_FRAME__', dialogue_frame), ('__KNOWLEDGE_POSTER__', knowledge_poster), ('__PLANTS__', plants), ('__RAILING__', railing), ('__DISTANT__', distant), ('__BUNDLE__', bundle)]:
+for token, value in [('__REFERENCE__', reference), ('__CLEAN__', clean), ('__COLUMN__', column), ('__DIALOGUE_FRAME__', dialogue_frame), ('__KNOWLEDGE_POSTER__', knowledge_poster), ('__COLUMN_POSTER__', column_poster), ('__PLANTS__', plants), ('__RAILING__', railing), ('__DISTANT__', distant), ('__BUNDLE__', bundle)]:
     html = html.replace(token, value)
 if remainders := [t for t in __import__('re').findall(r'__[A-Z_]+__', html) if t not in ('__THREE__', '__THREE_DEVTOOLS__')]:
     raise ValueError(remainders)
