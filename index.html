@@ -15,17 +15,17 @@ transform-origin:76% 45%;will-change:transform}
 #paper{z-index:10;position:fixed;inset:0;pointer-events:none;opacity:.035;mix-blend-mode:multiply;
 background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='128' height='128'%3E%3Cfilter id='p'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='.8' numOctaves='3' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='128' height='128' filter='url(%23p)' opacity='.6'/%3E%3C/svg%3E");background-size:128px 128px}
 @media(prefers-reduced-motion:reduce){#stage{will-change:auto}}
-#narration{position:fixed;z-index:20;left:50%;bottom:max(22px,env(safe-area-inset-bottom));transform:translateX(-50%);
-width:min(92vw,1480px);height:clamp(210px,29vh,320px);color:#493a2b;
-font-family:"Songti SC","Noto Serif CJK SC","Source Han Serif SC","SimSun",serif;pointer-events:none}
+#narration{position:fixed;z-index:20;left:51.2%;bottom:max(.9vh,env(safe-area-inset-bottom));transform:translateX(-50%);
+width:min(85vw,158.4vh);aspect-ratio:3.6;height:auto;container-type:inline-size;color:#775539;
+font-family:"KaiTi","楷体","Kaiti SC","STKaiti","Noto Serif CJK SC","SimSun",serif;pointer-events:none}
 #narration-frame{position:absolute;inset:0;width:100%;height:100%;filter:drop-shadow(0 3px 5px #34221130)}
-#narration-speaker{position:absolute;left:0;top:0;width:40.5%;height:27%;display:grid;place-items:center;
-font-size:clamp(23px,1.8vw,29px);font-weight:600;letter-spacing:.28em;text-indent:.28em;color:#f3dfaf;text-shadow:0 1px 2px #35170f}
-#narration-text{position:absolute;left:6%;right:6%;top:34%;bottom:10%;margin:0;display:grid;align-content:center;
-font-size:clamp(18px,1.55vw,24px);line-height:1.95;letter-spacing:.07em;overflow-wrap:anywhere;pointer-events:auto;user-select:text}
-@media(max-width:600px){#narration{width:calc(100vw - 20px);height:280px;bottom:max(12px,env(safe-area-inset-bottom))}
-#narration-speaker{font-size:23px;letter-spacing:.18em}#narration-text{left:7%;right:7%;font-size:18px;line-height:1.8;letter-spacing:.04em}}
-@media(max-height:600px) and (min-width:601px){#narration{height:180px;bottom:12px}#narration-text{font-size:18px;line-height:1.7}#narration-speaker{font-size:22px}}
+#narration-speaker{position:absolute;left:0;top:0;width:41.8%;height:25%;display:grid;place-items:center;
+font-size:clamp(20px,2.73cqw,44px);font-weight:400;letter-spacing:.26em;text-indent:.26em;color:#f5e5b2;text-shadow:0 1px 1px #57281750}
+#narration-text{position:absolute;left:6%;right:6%;top:51%;bottom:12%;margin:0;
+font-size:clamp(16px,2.55cqw,42px);line-height:1.75;letter-spacing:.12em;overflow-wrap:anywhere;pointer-events:auto;user-select:text}
+@media(max-width:700px){#narration{left:50%;width:calc(100vw - 20px);height:280px;aspect-ratio:auto;bottom:max(12px,env(safe-area-inset-bottom))}
+#narration-speaker{font-size:23px;letter-spacing:.18em}#narration-text{left:7%;right:7%;top:34%;bottom:10%;display:grid;align-content:center;font-size:18px;line-height:1.8;letter-spacing:.04em}}
+@media(max-width:700px) and (max-height:500px){#narration{height:auto;aspect-ratio:3.6;bottom:max(.9vh,env(safe-area-inset-bottom))}#narration-speaker{font-size:clamp(17px,2.73cqw,23px)}#narration-text{top:42%;bottom:10%;font-size:clamp(14px,2.55cqw,18px);line-height:1.7}}
 </style></head><body>
 <div id="stage"><i id="focus" aria-hidden="true"></i>
 <svg id="room" viewBox="0 0 1538 954" preserveAspectRatio="none" aria-hidden="true"><defs>

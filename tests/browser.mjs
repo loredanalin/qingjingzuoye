@@ -52,6 +52,15 @@ try {
   const narrationMobile = await page.locator('#narration').boundingBox();
   assert(narrationMobile.x >= 0 && narrationMobile.x + narrationMobile.width <= 390);
   await page.screenshot({ path: 'tests/results/mobile.png' });
+  await page.keyboard.press('Home');
+  await page.waitForFunction(() => window.__sceneDebug.zoom < 1.001);
+  for (const viewport of [{width:1270,height:680},{width:1440,height:500},{width:640,height:360}]) {
+    await page.setViewportSize(viewport);
+    assert(await page.locator('#narration-text').evaluate(e => e.scrollHeight <= e.clientHeight + 1), `Dialogue text fits ${viewport.width}x${viewport.height}`);
+    const box = await page.locator('#narration').boundingBox();
+    assert(box.x >= 0 && box.y >= 0 && box.x + box.width <= viewport.width && box.y + box.height <= viewport.height);
+    if (viewport.width === 1270) await page.screenshot({path:'tests/results/reference-layout.png'});
+  }
   assert.deepEqual(errors, []);
   assert.deepEqual(requests, [url]);
   console.log('PASS: exact narration text; screen-fixed dialogue; mobile text fits; five plants; railing above flowers; wheel zoom; walking; bilateral parallax at 2.4x; reduced motion; no external requests/errors.');
